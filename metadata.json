@@ -1,0 +1,8 @@
+{
+  "name": "GI Holidays",
+  "description": "Premium B2B Travel Management Company (BMC) offering high-end travel solutions, hotel bookings, and global tours for agents.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": []
+}
