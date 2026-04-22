@@ -1,0 +1,105 @@
+{
+  "entities": {
+    "Package": {
+      "title": "Travel Package",
+      "description": "A travel package offering specific destinations and services.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "destination": { "type": "string" },
+        "category": { "type": "string", "enum": ["Basic", "Premium", "Luxury"] },
+        "region": { "type": "string", "enum": ["Domestic", "International"] },
+        "price": { "type": "number" },
+        "duration": { "type": "string" },
+        "image": { "type": "string" },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "price", "category"]
+    },
+    "Lead": {
+      "title": "Lead/Inquiry",
+      "description": "Customer inquiry for a package or visa service.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "destination": { "type": "string" },
+        "serviceType": { "type": "string", "enum": ["Tour", "Visa", "B2B"] },
+        "status": { "type": "string", "enum": ["New", "Contacted", "Converted", "Lost"] },
+        "agentId": { "type": "string", "description": "ID of the B2B agent if applicable" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "phone", "serviceType", "status"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "A confirmed booking made by a user or agent.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "packageId": { "type": "string" },
+        "userId": { "type": "string" },
+        "agentId": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Confirmed", "Cancelled"] },
+        "totalAmount": { "type": "number" },
+        "travelDate": { "type": "string", "format": "date" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["packageId", "status", "totalAmount"]
+    },
+    "Agent": {
+      "title": "B2B Agent",
+      "description": "Details of a registered travel partner.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "agencyName": { "type": "string" },
+        "email": { "type": "string" },
+        "walletBalance": { "type": "number" },
+        "isVerified": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "agencyName", "email"]
+    },
+    "User": {
+      "title": "User Profile",
+      "description": "General user profile with roles and permissions.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["Admin", "Agent", "Customer", "Employee", "Vendor"] },
+        "isVerified": { "type": "boolean" }
+      },
+      "required": ["uid", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "System users and their roles"
+    },
+    "/packages/{packageId}": {
+      "schema": "Package",
+      "description": "Central inventory of travel packages"
+    },
+    "/leads/{leadId}": {
+      "schema": "Lead",
+      "description": "Sales inquiries and leads"
+    },
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Customer bookings"
+    },
+    "/agents/{agentId}": {
+      "schema": "Agent",
+      "description": "B2B Partner profiles"
+    }
+  }
+}

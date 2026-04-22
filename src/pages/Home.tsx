@@ -67,126 +67,8 @@ const testimonials = [
   }
 ];
 
-const categoryPackages = {
-  Basic: [
-    { 
-      id: 1, 
-      name: "Srinagar & Pahalgam", 
-      duration: "5 Nights / 6 Days", 
-      image: "https://picsum.photos/seed/kashmir_dal_lake/800/600",
-      inclusions: ["Hotels", "Breakfast & Dinner", "Pahalgam Trip", "AC Cab"]
-    },
-    { 
-      id: 2, 
-      name: "Shimla & Manali Honeymoon", 
-      duration: "5 Nights / 6 Days", 
-      image: "https://picsum.photos/seed/himachal_snow_mountains/800/600",
-      inclusions: ["3* Deluxe Hotel", "Candle Light Dinner", "Solang Valley", "Individual Cab"]
-    },
-    { 
-      id: 3, 
-      name: "Kerala Backwaters", 
-      duration: "4 Nights / 5 Days", 
-      image: "https://picsum.photos/seed/kerala_houseboat_backwaters/800/600",
-      inclusions: ["Munnar & Thekkady", "Houseboat Stay", "Daily Breakfast", "Transfers"]
-    },
-    { 
-      id: 4, 
-      name: "Char Dham Yatra", 
-      duration: "11 Nights / 12 Days", 
-      image: "https://picsum.photos/seed/himalayan_temple_uttarakhand/800/600",
-      inclusions: ["All Char Dhams", "Hotel Stay", "All Meals", "Group Coach"]
-    },
-    { 
-      id: 5, 
-      name: "Andaman Affair", 
-      duration: "4 Nights / 5 Days", 
-      image: "https://picsum.photos/seed/andaman_beach_tropical/800/600",
-      inclusions: ["Port Blair & Havelock", "Ferry Tickets", "Radhanagar Beach", "Breakfast"]
-    },
-    { 
-      id: 6, 
-      name: "Royal Himachal & Amritsar", 
-      duration: "9 Nights / 10 Days", 
-      image: "https://picsum.photos/seed/golden_temple_amritsar/800/600",
-      inclusions: ["Golden Temple", "Wagah Border", "Rohtang Pass", "Luxury Tempo"]
-    }
-  ],
-  Premium: [
-    { 
-      id: 101, 
-      name: "Kerala Royale Indulgence", 
-      duration: "4 Nights / 5 Days", 
-      image: "https://picsum.photos/seed/luxury_kerala_resort/800/600",
-      inclusions: ["Private Houseboat", "Luxury Resort", "Breakfast & Dinner", "SUV Transfer"]
-    },
-    { 
-      id: 102, 
-      name: "Luxury Golden Triangle", 
-      duration: "5 Nights / 6 Days", 
-      image: "https://picsum.photos/seed/taj_mahal_agra/800/600",
-      inclusions: ["Taj Mahal Sunrise", "Heritage Havelis", "Private Guide", "Luxury Sedan"]
-    },
-    { 
-      id: 103, 
-      name: "Premium Kashmir Ski Resort", 
-      duration: "5 Nights / 6 Days", 
-      image: "https://picsum.photos/seed/gulmarg_ski_resort/800/600",
-      inclusions: ["Khyber Resort Stay", "Gondola Phase 1&2", "Dal Lake Houseboat", "Expert Ski Assist"]
-    },
-    { 
-      id: 104, 
-      name: "Kerala & Coorg Tea-Estate", 
-      duration: "6 Nights / 7 Days", 
-      image: "https://picsum.photos/seed/coorg_tea_plantation/800/600",
-      inclusions: ["Boutique Estate Stay", "Coffee Plantation Tour", "Munnar Hills", "Private Driver"]
-    },
-    { 
-      id: 105, 
-      name: "Goa Private Villa Retreat", 
-      duration: "3 Nights / 4 Days", 
-      image: "https://picsum.photos/seed/goa_beach_villa/800/600",
-      inclusions: ["Private Pool Villa", "Beachside Dining", "Airport Limousine", "24/7 Butler"]
-    },
-    { 
-      id: 106, 
-      name: "Wildlife & Safari Luxury", 
-      duration: "4 Nights / 5 Days", 
-      image: "https://picsum.photos/seed/tiger_safari_india/800/600",
-      inclusions: ["Ranthambore Jungle Safari", "Taj View Room", "Safari Jeep", "Naturalist Support"]
-    }
-  ],
-  Luxury: [
-    { 
-      id: 201, 
-      name: "Ultimate Kerala Super Premium", 
-      duration: "7 Nights / 8 Days", 
-      image: "https://picsum.photos/seed/kerala_ayurveda_luxury/800/600",
-      inclusions: ["All 5* Premium Hotels", "Luxury Houseboat", "Spa Sessions", "Premium SUV Transfers"]
-    },
-    { 
-      id: 202, 
-      name: "Sikkim & Darjeeling Luxury", 
-      duration: "7 Nights / 8 Days", 
-      image: "https://picsum.photos/seed/mount_kanchenjunga_sikkim/800/600",
-      inclusions: ["Glenburn Tea Estate", "Chartered Flights", "Private Chef", "Heritage Steam Train"]
-    },
-    { 
-      id: 203, 
-      name: "Luxury Himalayan Retreat", 
-      duration: "7 Nights / 8 Days", 
-      image: "https://picsum.photos/seed/himalayan_luxury_spa/800/600",
-      inclusions: ["Wildflower Hall Stay", "Manali Luxury Cottage", "Personal Yoga", "SUV Support"]
-    },
-    { 
-      id: 204, 
-      name: "Royal Rajasthan Desert Heritage", 
-      duration: "6 Nights / 7 Days", 
-      image: "https://picsum.photos/seed/rajasthan_desert_fort/800/600",
-      inclusions: ["Umaid Bhawan Safari", "Luxury Tent Stay", "Camel Caravan", "Royal Welcome"]
-    }
-  ]
-};
+import { getCollection } from "../lib/firebase";
+import { Package, packages as localFallback } from "../lib/data";
 
 const heroSlides = [
   {
@@ -195,7 +77,7 @@ const heroSlides = [
     desc: "Direct access to 500,000+ properties with exclusive agent markups."
   },
   {
-    image: "https://picsum.photos/seed/kedarnath_temple_himalayas/1920/1080",
+    image: "https://giholidays.com/wp-content/uploads/2026/04/Char_Dham_tour_202604011708.jpeg",
     subtitle: "Heritage & Spiritual Tours",
     desc: "Exclusive Char Dham & Cultural Departures with guaranteed ground support."
   },
@@ -220,15 +102,39 @@ const tickerContent = [
 ];
 
 const charDhamDestinations = [
-  { name: "Kedarnath Temple", image: "https://picsum.photos/seed/kedarnath_temple_glow/800/600", desc: "Spiritual heights and divine energy." },
-  { name: "Badrinath Temple", image: "https://picsum.photos/seed/badrinath_temple_spiritual/800/600", desc: "The holy abode of Lord Vishnu." },
-  { name: "Yamunotri Temple", image: "https://picsum.photos/seed/yamunotri_river_himalayas/800/600", desc: "Source of the sacred Yamuna river." },
-  { name: "Gangotri Temple", image: "https://picsum.photos/seed/gangotri_glacier_temple/800/600", desc: "Where the Ganges descends to Earth." },
+  { name: "Kedarnath Temple", image: "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.27.41-PM-scaled.png", desc: "Spiritual heights and divine energy." },
+  { name: "Badrinath Temple", image: "https://giholidays.com/wp-content/uploads/2026/04/Char_Dham_tour_202604011708.jpeg", desc: "The holy abode of Lord Vishnu." },
+  { name: "Yamunotri Temple", image: "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.26.31-PM-scaled.png", desc: "Source of the sacred Yamuna river." },
+  { name: "Gangotri Temple", image: "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.25.45-PM-scaled.png", desc: "Where the Ganges descends to Earth." },
 ];
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState<"Basic" | "Premium" | "Luxury">("Basic");
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [packages, setPackages] = useState<Package[]>(localFallback);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const remoteContent = await getCollection<Package>("packages");
+        if (remoteContent && remoteContent.length > 0) {
+          setPackages(remoteContent);
+        }
+      } catch (e) {
+        console.error("Home Data Fetch Fail:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPackages();
+  }, []);
+
+  const categoryPackages = {
+    Basic: packages.filter(p => p.category === "Basic"),
+    Premium: packages.filter(p => p.category === "Premium"),
+    Luxury: packages.filter(p => p.category === "Luxury")
+  };
 
   const [partnerForm, setPartnerForm] = useState({
     name: "",
@@ -404,53 +310,79 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Char Dham Special Section */}
+      {/* Char Dham Mega Section */}
       <section id="char-dham" className="bg-[#002366] py-32 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
            <img src="https://giholidays.com/wp-content/uploads/2026/04/Char_Dham_tour_202604011708.jpeg" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
         </div>
         <div className="container-custom relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center mb-24">
+          <div className="text-center max-w-4xl mx-auto mb-20">
+            <span className="gold-text font-bold uppercase tracking-[0.4em] mb-6 block text-sm">Spiritual Awakening 2026</span>
+            <h2 className="text-5xl md:text-7xl font-bold leading-tight mb-8 serif">Char Dham Yatra – The <span className="gold-text italic">Journey to Salvation</span></h2>
+            <p className="text-white/70 text-xl leading-relaxed mb-10 font-light">
+              Ganga International Holidays specializes in the most comfortable and safe Char Dham Yatra experience. From luxury SUV transfers to VIP Darshan assistance, we handle every detail so you can focus on your devotion.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center mb-32">
             <div>
-              <span className="gold-text font-bold uppercase tracking-[0.4em] mb-6 block text-sm">Spiritual Awakening</span>
-              <h2 className="text-5xl md:text-7xl font-bold leading-tight mb-8 serif">Char Dham Yatra – Complete <span className="gold-text italic">Spiritual Journey</span></h2>
-              <p className="text-white/70 text-xl leading-relaxed mb-10 font-light">
-                Experience the sacred journey of Char Dham with professionally managed itineraries. We offer a blend of devotion, comfort, and safety for your spiritual quest.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+              <div className="space-y-8 mb-12">
                 {[
-                  "12 Days / 11 Nights Complete Yatra",
-                  "Do Dham Options (Kedar + Badri)",
-                  "Helicopter Packages Available",
-                  "Senior Citizen Friendly Tours",
-                  "VIP Darshan Assistance",
-                  "Verified Accommodation"
+                  { title: "Complete 12-Day Circuit", desc: "Covering Yamunotri, Gangotri, Kedarnath, and Badrinath in absolute comfort." },
+                  { title: "Special Helicopter Packages", desc: "Direct helicopter transfers for Kedarnath to save time and energy." },
+                  { title: "Verified Boutique Stays", desc: "Handpicked hotels at each Dham with clean facilities and great food." },
+                  { title: "Expert Ground Team", desc: "Dedicated managers stationed at every shrine for 24/7 client support." }
                 ].map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 text-white/90">
-                    <CheckCircle size={18} className="text-[#D4AF37]" />
-                    <span className="text-sm font-medium">{item}</span>
+                  <div key={idx} className="flex gap-6 group">
+                    <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-[#002366] transition-all flex-shrink-0">
+                      <Star size={24} />
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold mb-2 serif">{item.title}</h4>
+                      <p className="text-white/50 text-sm">{item.desc}</p>
+                    </div>
                   </div>
                 ))}
               </div>
-              <Link to="/contact" className="px-10 py-5 bg-[#D4AF37] text-[#002366] font-extrabold text-lg rounded-sm hover:scale-105 transition-all uppercase tracking-widest shadow-2xl">
-                👉 View Char Dham Packages
-              </Link>
+              <div className="flex flex-wrap gap-6">
+                <Link to="/char-dham-yatra" className="px-12 py-5 gold-gradient text-[#002366] font-extrabold text-lg rounded-sm hover:scale-105 transition-all uppercase tracking-widest shadow-2xl inline-block">
+                  Explore Full Details
+                </Link>
+                <Link to="/contact" className="px-12 py-5 border-2 border-white/20 text-white font-bold text-lg rounded-sm hover:bg-white/10 transition-all uppercase tracking-widest inline-block">
+                   Get B2B Quote
+                </Link>
+              </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6 relative">
+              <div className="absolute inset-0 bg-[#D4AF37]/5 blur-[100px] -z-10 animate-pulse"></div>
               {charDhamDestinations.map((dest, idx) => (
                 <div key={idx} className={cn(
-                  "relative h-64 rounded-3xl overflow-hidden group",
-                  idx === 1 || idx === 2 ? "translate-y-8" : ""
+                  "relative h-72 rounded-[2.5rem] overflow-hidden group border-2 border-white/10",
+                  idx === 1 || idx === 3 ? "translate-y-12" : ""
                 )}>
                   <img src={dest.image} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" referrerPolicy="no-referrer" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#002366] to-transparent opacity-60"></div>
-                  <div className="absolute bottom-4 left-4 right-4 text-center">
-                    <p className="text-[10px] font-bold text-white uppercase tracking-widest">{dest.name}</p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#002366] via-transparent to-transparent opacity-80"></div>
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <p className="text-xs font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-1">{dest.name}</p>
                   </div>
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Mini Gallery Strip */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-20 border-t border-white/10">
+             {[
+               "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.27.56-PM-scaled.png",
+               "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.26.46-PM-scaled.png",
+               "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.25.20-PM-scaled.png",
+               "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.25.45-PM-scaled.png"
+             ].map((img, i) => (
+               <div key={i} className="aspect-video rounded-2xl overflow-hidden border border-white/5 grayscale hover:grayscale-0 transition-all cursor-pointer">
+                  <img src={img} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+               </div>
+             ))}
           </div>
         </div>
       </section>

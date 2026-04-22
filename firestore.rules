@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 0.1 Global Safety Net Helpers
+    function isSignedIn() { return request.auth != null; }
+    function isVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    // Primary Admin: the provided user email
+    function isAdmin() { 
+      return isSignedIn() && (
+        request.auth.token.email == 'gangainternationalholidays@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+    
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    // 1. Packages (Central Inventory)
+    // Read: Public
+    // Write: Admin Only
+    match /packages/{packageId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidId(packageId) && isValidPackage(incoming());
+    }
+
+    function isValidPackage(p) {
+      return p.name is string && p.name.size() <= 200 &&
+             p.price is number && p.price >= 0 &&
+             p.category in ['Basic', 'Premium', 'Luxury'] &&
+             p.region in ['Domestic', 'International'];
+    }
+
+    // 2. Leads (Inquiries)
+    // Create: Public (Throttle if needed, but here we allow anyone to submit an inquiry)
+    // List/Get: Admin
+    match /leads/{leadId} {
+      allow create: if isValidId(leadId) && isValidLead(incoming());
+      allow get, list: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    function isValidLead(l) {
+      return l.name is string && l.name.size() <= 100 &&
+             l.phone is string && l.phone.size() <= 20 &&
+             l.serviceType in ['Tour', 'Visa', 'B2B'] &&
+             l.status == 'New' &&
+             l.createdAt == request.time;
+    }
+
+    // 3. Bookings
+    // Get/List: Owner or Admin
+    // Create: Verified User or Admin
+    match /bookings/{bookingId} {
+      allow create: if isVerified() && isValidBooking(incoming()) && (incoming().userId == request.auth.uid || isAdmin());
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    function isValidBooking(b) {
+      return b.packageId is string && b.packageId.size() <= 128 &&
+             b.status in ['Pending', 'Confirmed', 'Cancelled'] &&
+             b.totalAmount is number && b.totalAmount >= 0 &&
+             b.createdAt == request.time;
+    }
+
+    // 4. Agents (B2B Partner Profiles)
+    // Get/List: Self or Admin
+    // Create: Admin or System (if we had a trigger)
+    // Update: Self (Limited fields) or Admin
+    match /agents/{agentId} {
+      allow get: if isSignedIn() && (request.auth.uid == agentId || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isAdmin() || (isVerified() && request.auth.uid == agentId && isValidAgent(incoming()));
+      allow update: if isAdmin() || 
+        (isVerified() && request.auth.uid == agentId && 
+         incoming().diff(existing()).affectedKeys().hasOnly(['agencyName', 'email']) &&
+         isValidAgent(incoming())
+        );
+    }
+
+    function isValidAgent(a) {
+      return a.agencyName is string && a.agencyName.size() <= 100 &&
+             a.email is string && a.email.size() <= 100 &&
+             (a.walletBalance == 0 || (isSignedIn() && existing().walletBalance == incoming().walletBalance || isAdmin()));
+    }
+
+    // 5. Admin Registry
+    match /admins/{adminId} {
+      allow read: if isSignedIn() && (request.auth.uid == adminId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // 6. Users (Profiles)
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      // Prevent role escalation during update
+      allow update: if (isSignedIn() && request.auth.uid == userId && incoming().role == existing().role) || isAdmin();
+    }
+  }
+}

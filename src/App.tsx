@@ -17,6 +17,8 @@ import {
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+import { AuthProvider, useAuth } from "./context/AuthContext";
+
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -35,12 +37,17 @@ import CancellationPolicy from "./pages/CancellationPolicy";
 import B2BTerms from "./pages/B2BTerms";
 import CharDhamYatra from "./pages/CharDhamYatra";
 import DestinationWedding from "./pages/DestinationWedding";
+import VisaServices from "./pages/VisaServices";
+import B2BPartnership from "./pages/B2BPartnership";
+import WeekendGetaways from "./pages/WeekendGetaways";
+import AdminPortal from "./pages/AdminPortal";
 import WhatsAppChat from "./components/WhatsAppChat";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { profile, login, logout, loading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,6 +59,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Home", path: "/" },
+    { name: "Visa Services", path: "/visa-services" },
     { name: "Char Dham Yatra", path: "/char-dham-yatra" },
     { name: "Destination Wedding", path: "/destination-wedding" },
     { name: "Domestic Packages", path: "/services" },
@@ -96,12 +104,30 @@ const Navbar = () => {
               {link.name}
             </Link>
           ))}
-          <Link 
-            to="/b2b-portal" 
-            className="ml-2 px-4 py-2 bg-[#D4AF37] text-[#002366] rounded-sm font-bold hover:brightness-110 transition-all uppercase tracking-wider text-[10px]"
-          >
-            B2B Login
-          </Link>
+          
+          {!loading && (
+            profile ? (
+              <div className="flex items-center gap-4 ml-4">
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] font-bold text-white uppercase tracking-wider">{profile.displayName}</span>
+                  <span className="text-[8px] text-brand-gold font-bold uppercase">{profile.role}</span>
+                </div>
+                <button 
+                  onClick={logout}
+                  className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-sm font-bold uppercase tracking-wider text-[10px] transition-all"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={login}
+                className="ml-2 px-4 py-2 bg-[#D4AF37] text-[#002366] rounded-sm font-bold hover:brightness-110 transition-all uppercase tracking-wider text-[10px]"
+              >
+                Agent Login
+              </button>
+            )
+          )}
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -187,6 +213,7 @@ const Footer = () => (
               <li><Link to="/services" className="hover:text-[#D4AF37]">B2B Rates</Link></li>
               <li><Link to="/char-dham-yatra" className="hover:text-[#D4AF37]">Char Dham Yatra</Link></li>
               <li><Link to="/b2b-portal" className="hover:text-[#D4AF37]">Partner Login</Link></li>
+              <li><Link to="/admin-portal" className="hover:text-[#D4AF37]">Internal Portal</Link></li>
               <li><Link to="/b2b-partnership" className="hover:text-[#D4AF37]">Partnership Details</Link></li>
             </ul>
           </div>
@@ -287,35 +314,39 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col font-sans">
-      <AnimatePresence>
-        {isLoading && <Preloader key="preloader" />}
-      </AnimatePresence>
-
-      <Navbar />
-      <main className="flex-grow">
-        <AnimatePresence mode="wait">
-          <Routes location={location}>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/char-dham-yatra" element={<CharDhamYatra />} />
-            <Route path="/destination-wedding" element={<DestinationWedding />} />
-            <Route path="/weekend-getaways" element={<Home />} /> 
-            <Route path="/b2b-partnership" element={<Home />} />
-            <Route path="/b2b-portal/*" element={<B2BPortal />} />
-            <Route path="/refer-earn" element={<ReferEarn />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/terms-conditions" element={<TermsConditions />} />
-            <Route path="/payment-policy" element={<PaymentPolicy />} />
-            <Route path="/cancellation-policy" element={<CancellationPolicy />} />
-            <Route path="/b2b-terms" element={<B2BTerms />} />
-          </Routes>
+    <AuthProvider>
+      <div className="min-h-screen flex flex-col font-sans">
+        <AnimatePresence>
+          {isLoading && <Preloader key="preloader" />}
         </AnimatePresence>
-      </main>
-      <Footer />
-      <WhatsAppChat />
-    </div>
+
+        <Navbar />
+        <main className="flex-grow">
+          <AnimatePresence mode="wait">
+            <Routes location={location}>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/char-dham-yatra" element={<CharDhamYatra />} />
+              <Route path="/destination-wedding" element={<DestinationWedding />} />
+              <Route path="/visa-services" element={<VisaServices />} />
+              <Route path="/weekend-getaways" element={<WeekendGetaways />} /> 
+              <Route path="/b2b-partnership" element={<B2BPartnership />} />
+              <Route path="/b2b-portal/*" element={<B2BPortal />} />
+              <Route path="/admin-portal/*" element={<AdminPortal />} />
+              <Route path="/refer-earn" element={<ReferEarn />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-conditions" element={<TermsConditions />} />
+              <Route path="/payment-policy" element={<PaymentPolicy />} />
+              <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+              <Route path="/b2b-terms" element={<B2BTerms />} />
+            </Routes>
+          </AnimatePresence>
+        </main>
+        <Footer />
+        <WhatsAppChat />
+      </div>
+    </AuthProvider>
   );
 }

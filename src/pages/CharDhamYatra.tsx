@@ -66,6 +66,57 @@ const variants = [
   }
 ];
 
+const galleryImages = [
+  { 
+    url: "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.27.41-PM-scaled.png", 
+    title: "Majestic Kedarnath", 
+    desc: "Experience divine heights and sacred energy.",
+    span: "md:col-span-2 md:row-span-2" 
+  },
+  { 
+    url: "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.27.56-PM-scaled.png", 
+    title: "Eternal Himalayas", 
+    desc: "Breathtaking peaks surrounding the holy shrines.",
+    span: "" 
+  },
+  { 
+    url: "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.26.31-PM-scaled.png", 
+    title: "Temple Sanctuaries", 
+    desc: "Ancient architecture meeting spiritual devotion.",
+    span: "" 
+  },
+  { 
+    url: "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.27.11-PM.png", 
+    title: "Sacred Ganges Flow", 
+    desc: "Purity flowing from the heart of the mountains.",
+    span: "" 
+  },
+  { 
+    url: "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.26.46-PM-scaled.png", 
+    title: "Valley of Devotion", 
+    desc: "Lush landscapes along the pilgrimage route.",
+    span: "" 
+  },
+  { 
+    url: "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.25.45-PM-scaled.png", 
+    title: "Path to Salvation", 
+    desc: "Meticulously planned routes for a soul-stirring journey.",
+    span: "md:col-span-2" 
+  },
+  { 
+    url: "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.25.20-PM-scaled.png", 
+    title: "Mountain Serenity", 
+    desc: "Finding peace in the lap of Uttarakhand.",
+    span: "" 
+  },
+  { 
+    url: "https://giholidays.com/wp-content/uploads/2026/04/Char_Dham_tour_202604011708.jpeg", 
+    title: "Badrinath Abode", 
+    desc: "Seeking blessings at the holy seat of Lord Vishnu.",
+    span: "" 
+  },
+];
+
 export default function CharDhamYatra() {
   const [activeDay, setActiveDay] = React.useState<number | null>(1);
 
@@ -437,6 +488,51 @@ export default function CharDhamYatra() {
                 <h4 className="text-xl font-bold text-[#002366] mb-3">{feature.title}</h4>
                 <p className="text-sm text-slate-500 leading-relaxed">{feature.desc}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery Section */}
+      <section className="py-24 bg-slate-50 overflow-hidden">
+        <div className="container-custom">
+          <div className="text-center mb-16">
+            <span className="gold-text font-bold uppercase tracking-widest text-sm mb-4 block">Visual Journey</span>
+            <h2 className="text-4xl md:text-5xl font-bold text-[#002366] serif">Sacred Moments Gallery</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {galleryImages.map((img, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.05 }}
+                className={cn(
+                  "group relative overflow-hidden rounded-[2rem] shadow-xl border-4 border-white bg-white aspect-square md:aspect-auto",
+                  img.span
+                )}
+              >
+                <div className="h-full w-full overflow-hidden">
+                  <motion.img 
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
+                    src={img.url} 
+                    className="w-full h-full object-cover" 
+                    alt={img.title}
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                
+                {/* Overlay Caption */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#002366] via-[#002366]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
+                  <div className="transform transition-transform duration-500 group-hover:translate-y-0 translate-y-6">
+                    <h4 className="text-lg font-bold text-[#D4AF37] serif mb-1">{img.title}</h4>
+                    <p className="text-white/80 text-[10px] leading-snug">{img.desc}</p>
+                  </div>
+                </div>
+              </motion.div>
             ))}
           </div>
         </div>

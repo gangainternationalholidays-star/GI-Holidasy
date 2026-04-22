@@ -61,10 +61,10 @@ export default function About() {
             >
               <div className="grid grid-cols-2 gap-6 relative z-10">
                 <div className="rounded-[2.5rem] overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-500">
-                  <img src="https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.25.45-PM-scaled.png" alt="Travel 1" className="w-full h-full object-cover aspect-[4/5]" referrerPolicy="no-referrer" />
+                  <img src="https://picsum.photos/seed/b2b_travel_agents_working/800/1000" alt="Travel 1" className="w-full h-full object-cover aspect-[4/5]" referrerPolicy="no-referrer" />
                 </div>
                 <div className="rounded-[2.5rem] overflow-hidden shadow-2xl mt-16 hover:scale-105 transition-transform duration-500">
-                  <img src="https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.25.20-PM-scaled.png" alt="Travel 2" className="w-full h-full object-cover aspect-[4/5]" referrerPolicy="no-referrer" />
+                  <img src="https://picsum.photos/seed/luxury_car_rental_service/800/1000" alt="Travel 2" className="w-full h-full object-cover aspect-[4/5]" referrerPolicy="no-referrer" />
                 </div>
               </div>
               {/* Badge Overlay */}

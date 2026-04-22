@@ -25,7 +25,8 @@ const serviceList = [
     icon: <Globe size={40} />,
     title: "Visa Assistance",
     description: "Hassle-free visa processing for tourist, business, and transit visas across 100+ nations with document pickup services.",
-    features: ["Expert Counseling", "Fast Documentation", "Status Tracking", "Multi-country support"]
+    features: ["Expert Counseling", "Fast Documentation", "Status Tracking", "Multi-country support"],
+    link: "/visa-services"
   },
   {
     icon: <Plane size={40} />,
