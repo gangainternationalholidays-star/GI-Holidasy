@@ -26,19 +26,46 @@ import {
 import { cn } from "../lib/utils";
 import { packages as centralPackages } from "../lib/data";
 import { db, handleFirestoreError } from "../lib/firebase";
-import { collection, setDoc, doc, writeBatch } from "firebase/firestore";
-import { Database, RefreshCw, CheckCircle, ShieldCheck } from "lucide-react";
+import { 
+  collection, 
+  setDoc, 
+  doc, 
+  writeBatch, 
+  onSnapshot, 
+  query, 
+  updateDoc, 
+  addDoc, 
+  serverTimestamp,
+  where 
+} from "firebase/firestore";
+import { Database, RefreshCw, CheckCircle, ShieldCheck, UserPlus } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-// Mock Data for Admin
-const stats = [
-  { label: "Total Revenue", value: "₹45.2L", trend: "+12%", up: true, icon: <TrendingUp size={24}/> },
-  { label: "Active Bookings", value: "128", trend: "+5%", up: true, icon: <Package size={24}/> },
-  { label: "Partner Agents", value: "842", trend: "+18%", up: true, icon: <Users size={24}/> },
-  { label: "Pending Leads", value: "32", trend: "-2%", up: false, icon: <BarChart3 size={24}/> }
-];
+// Types
+interface FirebaseBooking {
+  id: string;
+  packageId: string;
+  userId: string;
+  agentId?: string;
+  status: string;
+  vendorId?: string;
+  vendorStatus?: string;
+  totalAmount: number;
+  travelDate: string;
+  createdAt: any;
+}
 
+interface FirebaseVendor {
+  uid: string;
+  businessName: string;
+  type: string;
+  email: string;
+  isVerified: boolean;
+  regions: string[];
+}
+
+// Mock Data for Admin - Moved to component level for dynamic updates
 const recentBookings = [
   { id: "GI-9901", client: "Vikram Singh", package: "Dubai Luxury 4N", agent: "TravelDesk Delhi", status: "Confirmed", amount: "₹85,000" },
   { id: "GI-9902", client: "Priya Sharma", package: "Char Dham Yatra", agent: "Direct", status: "Processing", amount: "₹45,500" },
@@ -52,6 +79,86 @@ export default function AdminPortal() {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
   const [isSyncing, setIsSyncing] = React.useState(false);
   const [syncStatus, setSyncStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
+  
+  // Dynamic Data States
+  const [dbBookings, setDbBookings] = React.useState<FirebaseBooking[]>([]);
+  const [dbVendors, setDbVendors] = React.useState<FirebaseVendor[]>([]);
+  const [dbLeads, setDbLeads] = React.useState<any[]>([]);
+  const [agentCount, setAgentCount] = React.useState(0);
+  const [selectedBooking, setSelectedBooking] = React.useState<FirebaseBooking | null>(null);
+  const [isAssignModalOpen, setIsAssignModalOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!profile || profile.role !== 'Admin') return;
+
+    // Listen to Bookings
+    const unsubscribeBookings = onSnapshot(collection(db, "bookings"), (snapshot) => {
+      setDbBookings(snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as FirebaseBooking[]);
+    });
+
+    // Listen to Vendors
+    const unsubscribeVendors = onSnapshot(collection(db, "vendors"), (snapshot) => {
+      setDbVendors(snapshot.docs.map(d => ({ uid: d.id, ...d.data() })) as FirebaseVendor[]);
+    });
+
+    // Listen to Leads
+    const unsubscribeLeads = onSnapshot(collection(db, "leads"), (snapshot) => {
+      setDbLeads(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
+    // Listen to Agents (Users with role 'Agent')
+    const qAgents = query(collection(db, "users"), where("role", "==", "Agent"));
+    const unsubscribeAgents = onSnapshot(qAgents, (snapshot) => {
+      setAgentCount(snapshot.size);
+    });
+
+    return () => {
+      unsubscribeBookings();
+      unsubscribeVendors();
+      unsubscribeLeads();
+      unsubscribeAgents();
+    };
+  }, [profile]);
+
+  const stats = React.useMemo(() => {
+    const totalRevenue = dbBookings
+      .filter(b => b.status !== 'Cancelled')
+      .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+    
+    return [
+      { label: "Total Revenue", value: `₹${(totalRevenue / 100000).toFixed(1)}L`, trend: "+12%", up: true, icon: <TrendingUp size={24}/> },
+      { label: "Active Bookings", value: dbBookings.filter(b => b.status !== 'Completed' && b.status !== 'Cancelled').length.toString(), trend: "+5%", up: true, icon: <Package size={24}/> },
+      { label: "Partner Agents", value: agentCount.toString(), trend: "+18%", up: true, icon: <Users size={24}/> },
+      { label: "Pending Leads", value: dbLeads.filter(l => l.status === 'New').length.toString(), trend: "-2%", up: false, icon: <BarChart3 size={24}/> }
+    ];
+  }, [dbBookings, agentCount, dbLeads]);
+
+  const assignVendor = async (bookingId: string, vendorId: string) => {
+    try {
+      const bookingRef = doc(db, "bookings", bookingId);
+      await updateDoc(bookingRef, {
+        vendorId: vendorId,
+        vendorStatus: 'Pending',
+        status: 'Vendor-Assigned'
+      });
+      
+      // Create notification for Vendor
+      await addDoc(collection(db, "notifications"), {
+        recipientId: vendorId,
+        title: "New Booking Assignment",
+        message: `You have been assigned a new booking (ID: ${bookingId}). Please review and accept.`,
+        bookingId: bookingId,
+        type: 'assignment',
+        read: false,
+        createdAt: serverTimestamp()
+      });
+
+      setIsAssignModalOpen(false);
+      setSelectedBooking(null);
+    } catch (error) {
+      console.error("Assignment Error:", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -458,6 +565,95 @@ export default function AdminPortal() {
               </motion.div>
             )}
 
+            {activeTab === "bookings" && (
+              <motion.div
+                key="bookings"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-10"
+              >
+                <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm relative overflow-hidden">
+                   <div className="flex justify-between items-center mb-10">
+                      <div>
+                        <h2 className="text-2xl font-bold text-[#002366] serif">Operations & Bookings</h2>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Live Database Feed</p>
+                      </div>
+                      <button 
+                        onClick={async () => {
+                          await addDoc(collection(db, "bookings"), {
+                            packageId: "KASH-001",
+                            packageName: "Kashmir Paradise Tour",
+                            status: "Pending",
+                            totalAmount: 45000,
+                            travelDate: "2026-05-15",
+                            userId: profile?.uid,
+                            clientName: "Test Customer",
+                            createdAt: serverTimestamp()
+                          });
+                        }}
+                        className="bg-[#D4AF37] text-white px-6 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-[#D4AF37]/20"
+                      >
+                        Generate Test Booking
+                      </button>
+                   </div>
+                   <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                         <thead className="bg-slate-50 text-slate-400 text-[10px] uppercase font-bold tracking-widest">
+                            <tr>
+                               <th className="px-10 py-5">Booking ID</th>
+                               <th className="px-10 py-5">Travel Date</th>
+                               <th className="px-10 py-5">Status</th>
+                               <th className="px-10 py-5">Assigned Vendor</th>
+                               <th className="px-10 py-5">Actions</th>
+                            </tr>
+                         </thead>
+                         <tbody className="divide-y divide-slate-100">
+                            {dbBookings.map((b) => (
+                              <tr key={b.id} className="hover:bg-slate-50/50 transition-colors">
+                                 <td className="px-10 py-5 font-bold text-[#002366] text-sm">{b.id}</td>
+                                 <td className="px-10 py-5 text-sm font-medium text-slate-600">{b.travelDate}</td>
+                                 <td className="px-10 py-5">
+                                    <span className={cn(
+                                      "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
+                                      b.status === "Confirmed" ? "bg-green-100 text-green-700" :
+                                      b.status === "Vendor-Assigned" ? "bg-blue-100 text-blue-700" :
+                                      "bg-yellow-100 text-yellow-700"
+                                    )}>
+                                       {b.status}
+                                    </span>
+                                 </td>
+                                 <td className="px-10 py-5">
+                                    {b.vendorId ? (
+                                      <div className="flex flex-col">
+                                        <span className="text-xs font-bold text-[#002366]">
+                                          {dbVendors.find(v => v.uid === b.vendorId)?.businessName || "Unknown Vendor"}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 uppercase font-black">{b.vendorStatus}</span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-xs text-slate-400 italic">Not Assigned</span>
+                                    )}
+                                 </td>
+                                 <td className="px-10 py-5">
+                                    <button 
+                                      onClick={() => {
+                                        setSelectedBooking(b);
+                                        setIsAssignModalOpen(true);
+                                      }}
+                                      className="text-xs font-black text-[#D4AF37] uppercase tracking-widest hover:underline"
+                                    >
+                                      {b.vendorId ? "Re-assign" : "Assign Vendor"}
+                                    </button>
+                                 </td>
+                              </tr>
+                            ))}
+                         </tbody>
+                      </table>
+                   </div>
+                </div>
+              </motion.div>
+            )}
+
             {activeTab === "vendors" && (
               <motion.div
                 key="vendors"
@@ -468,30 +664,50 @@ export default function AdminPortal() {
                 <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
                    <div className="flex justify-between items-center mb-10">
                       <h2 className="text-2xl font-bold text-[#002366] serif">Vendor Management</h2>
+                      <button 
+                        onClick={async () => {
+                          const uid = prompt("Enter Vendor UID to register:");
+                          if (uid) {
+                            await setDoc(doc(db, "vendors", uid), {
+                              businessName: "New Vendor",
+                              type: "All-In-One",
+                              email: "vendor@example.com",
+                              isVerified: true,
+                              regions: ["Domestic"],
+                              createdAt: new Date().toISOString()
+                            });
+                          }
+                        }}
+                        className="bg-[#002366] text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest"
+                      >
+                        Register New Vendor
+                      </button>
                    </div>
                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {[
-                        { name: "Global Hotels Hub", type: "Stay Vendor", status: "Verified", locations: ["Dubai", "Bali"] },
-                        { name: "Safari Express", type: "Transport", status: "Review", locations: ["Africa", "India"] },
-                        { name: "Visa Pro Services", type: "Docs/Legal", status: "Verified", locations: ["Global"] }
-                      ].map((v, i) => (
-                        <div key={i} className="p-8 bg-slate-50/50 border border-slate-100 rounded-3xl group hover:bg-white hover:shadow-xl transition-all">
+                      {dbVendors.map((v) => (
+                        <div key={v.uid} className="p-8 bg-slate-50/50 border border-slate-100 rounded-3xl group hover:bg-white hover:shadow-xl transition-all">
                            <div className="flex justify-between items-start mb-6">
                               <Briefcase size={32} className="text-[#D4AF37]"/>
                               <span className={cn(
                                 "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
-                                v.status === "Verified" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
-                              )}>{v.status}</span>
+                                v.isVerified ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+                              )}>{v.isVerified ? "Verified" : "Pending"}</span>
                            </div>
-                           <h4 className="text-lg font-bold text-[#002366] mb-2">{v.name}</h4>
+                           <h4 className="text-lg font-bold text-[#002366] mb-2">{v.businessName}</h4>
                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-4">{v.type}</p>
+                           <p className="text-[10px] text-slate-400 font-medium mb-4 truncate">{v.uid}</p>
                            <div className="flex flex-wrap gap-2">
-                              {v.locations.map((loc, j) => (
+                              {v.regions.map((loc, j) => (
                                 <span key={j} className="text-[9px] font-bold text-slate-500 bg-white px-2 py-1 rounded-md border border-slate-100">{loc}</span>
                               ))}
                            </div>
                         </div>
                       ))}
+                      {dbVendors.length === 0 && (
+                        <div className="col-span-3 text-center py-20 text-slate-400 font-medium italic">
+                          No vendors registered in Firestore yet.
+                        </div>
+                      )}
                    </div>
                 </div>
               </motion.div>
@@ -640,6 +856,65 @@ export default function AdminPortal() {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* Assign Vendor Modal */}
+      <AnimatePresence>
+        {isAssignModalOpen && selectedBooking && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 pb-20">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsAssignModalOpen(false)}
+              className="absolute inset-0 bg-[#002366]/40 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl overflow-hidden"
+            >
+              <div className="p-8 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                <div>
+                  <h3 className="text-2xl font-bold text-[#002366] serif">Assign Vendor</h3>
+                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">Booking ID: {selectedBooking.id}</p>
+                </div>
+                <button onClick={() => setIsAssignModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
+                  <X />
+                </button>
+              </div>
+              <div className="p-8 max-h-[400px] overflow-y-auto">
+                <div className="space-y-4">
+                  {dbVendors.map(vendor => (
+                    <button
+                      key={vendor.uid}
+                      onClick={() => assignVendor(selectedBooking.id, vendor.uid)}
+                      className="w-full flex items-center justify-between p-6 bg-white border border-slate-100 rounded-2xl hover:border-[#D4AF37] hover:shadow-lg transition-all group"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-[#D4AF37] group-hover:bg-[#D4AF37]/10">
+                          <ShieldCheck size={24} />
+                        </div>
+                        <div className="text-left">
+                          <h4 className="font-bold text-[#002366]">{vendor.businessName}</h4>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{vendor.type} • {vendor.regions.join(", ")}</p>
+                        </div>
+                      </div>
+                      <ChevronRight size={20} className="text-slate-300 group-hover:text-[#D4AF37] transform group-hover:translate-x-1 transition-all" />
+                    </button>
+                  ))}
+                  {dbVendors.length === 0 && (
+                    <p className="text-center py-10 text-slate-400 italic">No vendors found. Please register vendors first.</p>
+                  )}
+                </div>
+              </div>
+              <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end">
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">Selecting a vendor will trigger an instant notification.</p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

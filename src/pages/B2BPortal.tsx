@@ -27,26 +27,43 @@ import {
   Mail as MailIcon,
   Share2,
   Copy,
-  Check
+  Check,
+  ShieldCheck,
+  RefreshCw
 } from "lucide-react";
 import { cn } from "../lib/utils";
+import { useAuth } from "../context/AuthContext";
+import { db, handleFirestoreError } from "../lib/firebase";
+import { 
+  collection, 
+  query, 
+  where, 
+  onSnapshot, 
+  doc, 
+  addDoc, 
+  serverTimestamp,
+  updateDoc
+} from "firebase/firestore";
 
-import { packages as centralPackages } from "../lib/data";
+interface Package {
+  id: string;
+  name: string;
+  priceB2B: number;
+  availability: string;
+  category: string;
+  region: string;
+  images: string[];
+}
 
-const mockRates = centralPackages.map(p => ({
-  id: p.id,
-  destination: p.name,
-  price: p.priceB2B,
-  availability: p.availability,
-  category: p.category,
-  region: p.region
-}));
-
-const mockBookings = [
-  { id: "GI-8821", agent: "JD", client: "Amit Sharma", package: "Dubai 4N/5D", status: "Confirmed", date: "2026-04-18" },
-  { id: "GI-8822", agent: "JD", client: "Surbhi Gupta", package: "Bali 5N/6D", status: "Pending", date: "2026-04-19" },
-  { id: "GI-8820", agent: "JD", client: "Rajesh Kumar", package: "Paris 5N/6D", status: "Processing", date: "2026-04-15" },
-];
+interface Booking {
+  id: string;
+  clientName: string;
+  packageName: string;
+  status: string;
+  date: string;
+  createdAt: any;
+  agentId: string;
+}
 
 const mockEarnings = {
   total: 124500,
@@ -60,15 +77,18 @@ const mockEarnings = {
 };
 
 export default function B2BPortal() {
-  const [view, setView] = useState<"login" | "register" | "dashboard">("login");
+  const { profile, loading, login, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<"overview" | "packages" | "bookings" | "earnings">("overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterRegion, setFilterRegion] = useState("All");
   const [filterCategory, setFilterCategory] = useState("All");
-  const [isLogged, setIsLogged] = useState(false);
+
+  // Dynamic Data
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
 
   // Booking Modal State
-  const [selectedPackage, setSelectedPackage] = useState<typeof mockRates[0] | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [bookingStep, setBookingStep] = useState<"details" | "success">("details");
   const [bookingDetails, setBookingDetails] = useState({
     clientName: "",
@@ -77,12 +97,43 @@ export default function B2BPortal() {
     travelDate: ""
   });
   const [generatedBookingId, setGeneratedBookingId] = useState("");
+  const [isBookingLoading, setIsBookingLoading] = useState(false);
 
   // Share Modal State
-  const [sharePackage, setSharePackage] = useState<typeof mockRates[0] | null>(null);
+  const [sharePackage, setSharePackage] = useState<Package | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const handleShare = (pkg: typeof mockRates[0]) => {
+  React.useEffect(() => {
+    // 1. Fetch Packages
+    const unsubscribePkg = onSnapshot(collection(db, "packages"), (snapshot) => {
+      const pData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Package[];
+      setPackages(pData);
+    });
+
+    // 2. Fetch Agent Bookings if logged in
+    let unsubscribeBookings = () => {};
+    if (profile) {
+      const q = query(
+        collection(db, "bookings"),
+        where("agentId", "==", profile.uid)
+      );
+      unsubscribeBookings = onSnapshot(q, (snapshot) => {
+        const bData = snapshot.docs.map(doc => ({ 
+          id: doc.id, 
+          ...doc.data(),
+          date: new Date(doc.data().createdAt?.seconds * 1000).toLocaleDateString()
+        })) as Booking[];
+        setBookings(bData);
+      });
+    }
+
+    return () => {
+      unsubscribePkg();
+      unsubscribeBookings();
+    };
+  }, [profile]);
+
+  const handleShare = (pkg: Package) => {
     setSharePackage(pkg);
     setCopied(false);
   };
@@ -94,11 +145,36 @@ export default function B2BPortal() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newId = `GI-${Math.floor(Math.random() * 9000) + 1000}`;
-    setGeneratedBookingId(newId);
-    setBookingStep("success");
+    if (!profile || !selectedPackage) return;
+
+    setIsBookingLoading(true);
+    try {
+      const newBooking = {
+        agentId: profile.uid,
+        agentName: profile.displayName,
+        packageId: selectedPackage.id,
+        packageName: selectedPackage.name,
+        clientName: bookingDetails.clientName,
+        clientPhone: bookingDetails.clientPhone,
+        clientEmail: bookingDetails.clientEmail,
+        travelDate: bookingDetails.travelDate,
+        totalAmount: selectedPackage.priceB2B,
+        status: "Pending",
+        vendorId: "",
+        vendorStatus: "None",
+        createdAt: serverTimestamp()
+      };
+
+      const docRef = await addDoc(collection(db, "bookings"), newBooking);
+      setGeneratedBookingId(docRef.id);
+      setBookingStep("success");
+    } catch (error) {
+      console.error("Booking Error:", error);
+    } finally {
+      setIsBookingLoading(false);
+    }
   };
 
   const closeBookingModal = () => {
@@ -113,25 +189,13 @@ export default function B2BPortal() {
   };
 
   const filteredRates = useMemo(() => {
-    return mockRates.filter(rate => {
-      const matchesSearch = rate.destination.toLowerCase().includes(searchQuery.toLowerCase());
+    return packages.filter(rate => {
+      const matchesSearch = rate.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesRegion = filterRegion === "All" || rate.region === filterRegion;
       const matchesCategory = filterCategory === "All" || rate.category === filterCategory;
       return matchesSearch && matchesRegion && matchesCategory;
     });
-  }, [searchQuery, filterRegion, filterCategory]);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLogged(true);
-    setView("dashboard");
-  };
-
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert("Registration request sent! Our team will verify your agency shortly.");
-    setView("login");
-  };
+  }, [packages, searchQuery, filterRegion, filterCategory]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -142,16 +206,27 @@ export default function B2BPortal() {
     }
   };
 
-  if (view === "dashboard") {
+  if (loading) {
+    return (
+      <div className="pt-40 flex flex-col items-center justify-center gap-6">
+        <RefreshCw className="animate-spin text-[#D4AF37]" size={40} />
+        <p className="font-bold text-[#002366] uppercase tracking-widest">Verifying Portal Access...</p>
+      </div>
+    );
+  }
+
+  if (profile && (profile.role === 'Agent' || profile.role === 'Admin')) {
     return (
       <div className="pt-20 min-h-screen bg-slate-50 flex flex-col md:flex-row">
         {/* Sidebar */}
-        <aside className="w-full md:w-72 bg-[#002366] text-white p-6 sticky top-20 h-auto md:h-[calc(100vh-80px)] overflow-y-auto">
+        <aside className="w-full md:w-72 bg-[#002366] text-white p-6 sticky top-20 h-auto md:h-[calc(100vh-80px)] overflow-y-auto z-40">
           <div className="flex items-center gap-4 mb-10 pb-6 border-b border-white/10">
-            <div className="w-12 h-12 gold-gradient rounded-full flex items-center justify-center font-bold text-[#002366] text-lg">JD</div>
+            <div className="w-12 h-12 gold-gradient rounded-full flex items-center justify-center font-bold text-[#002366] text-lg uppercase">
+              {profile.displayName?.charAt(0) || profile.email?.charAt(0)}
+            </div>
             <div>
-              <h3 className="font-bold">John Doe</h3>
-              <p className="text-xs text-[#D4AF37] uppercase tracking-widest font-medium">Verified Partner</p>
+              <h3 className="font-bold truncate max-w-[150px]">{profile.displayName}</h3>
+              <p className="text-xs text-[#D4AF37] uppercase tracking-widest font-medium">{profile.role} Partner</p>
             </div>
           </div>
 
@@ -178,7 +253,7 @@ export default function B2BPortal() {
             
             <div className="pt-8 mt-8 border-t border-white/10">
               <button 
-                onClick={() => setView("login")}
+                onClick={logout}
                 className="w-full flex items-center gap-4 p-4 text-white/50 hover:text-red-400 transition-colors text-sm font-medium"
               >
                 <LogOut size={18} /> Logout Session
@@ -233,7 +308,7 @@ export default function B2BPortal() {
 
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                   <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <h3 className="text-xl font-bold text-[#002366]">Hot B2B Offers</h3>
+                    <h3 className="text-xl font-bold text-[#002366]">Current GI Portfolio</h3>
                     <div className="flex bg-slate-100 p-1 rounded-xl">
                       {["All", "Domestic", "International"].map(r => (
                         <button 
@@ -255,7 +330,7 @@ export default function B2BPortal() {
                         <tr>
                           <th className="px-8 py-5">Destination</th>
                           <th className="px-8 py-5">Category</th>
-                          <th className="px-8 py-5">Status</th>
+                          <th className="px-8 py-5">Global Rate</th>
                           <th className="px-8 py-5">Region</th>
                           <th className="px-8 py-5">Request</th>
                         </tr>
@@ -264,18 +339,13 @@ export default function B2BPortal() {
                         {filteredRates.slice(0, 4).map(rate => (
                           <tr key={rate.id} className="hover:bg-slate-50/50 transition-colors group">
                             <td className="px-8 py-5">
-                              <span className="font-bold text-[#002366] block">{rate.destination}</span>
+                              <span className="font-bold text-[#002366] block">{rate.name}</span>
                             </td>
                             <td className="px-8 py-5">
                               <span className="text-[10px] text-slate-400 uppercase tracking-tighter font-bold">{rate.category}</span>
                             </td>
                             <td className="px-8 py-5">
-                              <span className={cn(
-                                "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest",
-                                rate.availability === "High" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                              )}>
-                                {rate.availability}
-                              </span>
+                              <span className="font-bold text-green-600">₹{rate.priceB2B.toLocaleString('en-IN')}</span>
                             </td>
                             <td className="px-8 py-5 text-xs text-slate-500 font-medium">{rate.region}</td>
                         <td className="px-8 py-5">
@@ -368,15 +438,15 @@ export default function B2BPortal() {
                           <span className="px-4 py-1 bg-slate-50 rounded-full text-[10px] font-bold text-slate-400 uppercase tracking-widest">{rate.region}</span>
                           <span className="px-4 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full text-[10px] font-bold uppercase tracking-widest">{rate.category}</span>
                         </div>
-                        <h3 className="text-2xl font-bold text-[#002366] mb-2">{rate.destination}</h3>
-                        <p className="text-slate-500 text-sm mb-6 leading-relaxed">Complete B2B ground package including standard stay and airport transfers.</p>
+                        <h3 className="text-2xl font-bold text-[#002366] mb-2">{rate.name}</h3>
+                        <p className="text-slate-500 text-sm mb-6 leading-relaxed truncate">Best Net rates available for {rate.name}.</p>
                       </div>
                       <div className="flex gap-2">
                         <button 
                           onClick={() => setSelectedPackage(rate)}
                           className="flex-grow py-4 bg-slate-50 text-[#002366] font-bold rounded-xl hover:bg-[#D4AF37] transition-all flex items-center justify-center gap-3"
                         >
-                           Book Now <ArrowUpRight size={18}/>
+                           ₹{rate.priceB2B.toLocaleString('en-IN')} <ArrowUpRight size={18}/>
                         </button>
                         <button 
                           onClick={() => handleShare(rate)}
@@ -471,7 +541,7 @@ export default function B2BPortal() {
                           </h2>
                           <p className="text-slate-500 text-sm">
                             {bookingStep === "details" 
-                              ? `For: ${selectedPackage.destination}` 
+                              ? `For: ${selectedPackage.name}` 
                               : `Success! Inquiry ID: ${generatedBookingId}`}
                           </p>
                         </div>
@@ -547,9 +617,10 @@ export default function B2BPortal() {
 
                           <button 
                             type="submit"
-                            className="w-full bg-[#002366] text-white py-5 rounded-xl font-black uppercase tracking-widest text-sm shadow-xl shadow-[#002366]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                            disabled={isBookingLoading}
+                            className="w-full bg-[#002366] text-white py-5 rounded-xl font-black uppercase tracking-widest text-sm shadow-xl shadow-[#002366]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                           >
-                            Confirm Booking Request <CheckCircle2 size={20} />
+                            {isBookingLoading ? "Processing..." : "Confirm Booking Request"} <CheckCircle2 size={20} />
                           </button>
                         </form>
                       ) : (
@@ -608,11 +679,11 @@ export default function B2BPortal() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
-                        {mockBookings.map(booking => (
+                        {bookings.map(booking => (
                           <tr key={booking.id} className="hover:bg-slate-50 transition-colors">
                             <td className="px-8 py-6 text-[#002366] font-bold">{booking.id}</td>
-                            <td className="px-8 py-6 font-medium">{booking.client}</td>
-                            <td className="px-8 py-6 text-slate-600">{booking.package}</td>
+                            <td className="px-8 py-6 font-medium">{booking.clientName}</td>
+                            <td className="px-8 py-6 text-slate-600">{booking.packageName}</td>
                             <td className="px-8 py-6 text-slate-400">{booking.date}</td>
                             <td className="px-8 py-6">
                               <span className={cn(
@@ -699,7 +770,7 @@ export default function B2BPortal() {
   }
 
   return (
-    <div className="pt-20 min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col pt-10">
       <AnimatePresence mode="wait">
         <motion.div 
           key="forms"
@@ -707,91 +778,25 @@ export default function B2BPortal() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           className="flex-grow flex items-center justify-center p-6 bg-cover bg-center py-20"
-          style={{ backgroundImage: `linear-gradient(rgba(0, 35, 102, 0.8), rgba(0, 35, 102, 0.8)), url('https://picsum.photos/seed/office/1920/1080')` }}
+          style={{ backgroundImage: `linear-gradient(rgba(0, 35, 102, 0.8), rgba(0, 35, 102, 0.8)), url('https://picsum.photos/seed/travel/1920/1080')` }}
         >
-          <div className="w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden mt-10">
-            <div className="flex border-b border-gray-100">
-              <button 
-                onClick={() => setView("login")}
-                className={cn(
-                  "flex-1 py-5 font-bold transition-all flex items-center justify-center gap-2",
-                  view === "login" ? "text-[#D4AF37] bg-white" : "text-gray-400 bg-gray-50 border-r border-gray-100"
-                )}
-              >
-                <Lock size={18} /> Partner Login
-              </button>
-              <button 
-                onClick={() => setView("register")}
-                className={cn(
-                  "flex-1 py-5 font-bold transition-all flex items-center justify-center gap-2",
-                  view === "register" ? "text-[#D4AF37] bg-white" : "text-gray-400 bg-gray-50"
-                )}
-              >
-                <UserPlus size={18} /> New Agent
-              </button>
-            </div>
-
-            <div className="p-10">
-              {view === "login" ? (
-                <form onSubmit={handleLogin} className="space-y-6">
-                  <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold text-[#002366] serif">Access Portal</h2>
-                    <p className="text-slate-500 text-sm">Welcome back, Travel Partner.</p>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Agency Email</label>
-                    <input type="email" required className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-4 outline-none focus:border-[#D4AF37] transition-all" placeholder="agent@agency.com" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Password</label>
-                    <input type="password" required className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-4 outline-none focus:border-[#D4AF37] transition-all" placeholder="••••••••" />
-                  </div>
-                  <button type="submit" className="w-full bg-[#002366] text-white py-5 rounded-xl font-bold shadow-xl hover:bg-[#001a4d] transition-all uppercase tracking-widest text-xs">
-                    Access Dashboard
-                  </button>
-                  <p className="text-center text-xs text-gray-400">
-                    Forgot agency credentials? <button type="button" className="text-[#D4AF37] font-bold">Contact Support</button>
-                  </p>
-                </form>
-              ) : (
-                <form onSubmit={handleRegister} className="space-y-6">
-                  <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold text-[#002366] serif">Apply for Access</h2>
-                    <p className="text-slate-500 text-sm">Join the network of 5000+ happy agents.</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Name</label>
-                      <input type="text" required className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-4 outline-none focus:border-[#D4AF37]" placeholder="Full Name" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Agency</label>
-                      <input type="text" required className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-4 outline-none focus:border-[#D4AF37]" placeholder="Agency Name" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Phone No.</label>
-                    <input type="tel" required className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-4 outline-none focus:border-[#D4AF37]" placeholder="+91 00000 00000" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Office Email</label>
-                    <input type="email" required className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-4 outline-none focus:border-[#D4AF37]" placeholder="official@agency.com" />
-                  </div>
-                  <button type="submit" className="w-full gold-gradient text-[#002366] py-5 rounded-xl font-bold shadow-xl hover:brightness-110 transition-all uppercase tracking-widest text-xs">
-                    Join as Partner
-                  </button>
-                </form>
-              )}
-            </div>
-
-            <div className="p-6 bg-[#002366] text-white flex items-start gap-4">
-              <CheckCircle2 className="text-[#D4AF37] shrink-0" size={24} />
-              <div>
-                <p className="text-[10px] text-white font-bold uppercase tracking-widest mb-1">Professional Verification</p>
-                <p className="text-[10px] text-slate-300 leading-relaxed font-medium">
-                  We only verify genuine business entities. Registration might take up to 24 hours.
-                </p>
-              </div>
+          <div className="w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden mt-10">
+            <div className="flex flex-col p-12 text-center">
+               <ShieldCheck className="mx-auto text-[#D4AF37] mb-6" size={60} />
+               <h2 className="text-4xl font-bold text-[#002366] serif mb-4">Partner Login Required</h2>
+               <p className="text-slate-500 mb-10 text-lg">
+                 Access restricted to verified travel partners. Please use your agent account to view B2B inventory and manage bookings.
+               </p>
+               <button 
+                onClick={login}
+                className="w-full bg-[#002366] text-white py-5 rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl shadow-[#002366]/20 hover:scale-[1.05] transition-all flex items-center justify-center gap-3"
+               >
+                 Partner Login <Lock size={20} />
+               </button>
+               <div className="mt-8 pt-8 border-t border-slate-100 flex flex-col gap-4">
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">New to GI Holidays?</p>
+                  <button className="text-[#002366] font-black uppercase tracking-widest text-xs hover:text-[#D4AF37] transition-colors">Apply for Agency Account</button>
+               </div>
             </div>
           </div>
         </motion.div>

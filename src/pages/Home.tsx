@@ -3,116 +3,160 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ShieldCheck, 
-  Award, 
-  Users, 
   MapPin, 
-  CheckCircle2, 
   ArrowRight,
-  Hotel,
-  Plane,
-  Globe,
   Star,
   ChevronRight,
-  Send,
-  CheckCircle2 as CheckCircle,
-  Car,
-  Wind,
+  Briefcase,
+  Heart,
+  Mountain,
+  Users,
+  Compass,
+  Palmtree,
+  Search,
+  Globe,
   Navigation
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "../lib/utils";
-
-const services = [
-  {
-    icon: <Hotel className="text-[#D4AF37]" size={32} />,
-    title: "Global Hotel Inventory",
-    description: "Access 500,000+ hotels worldwide with exclusive B2B negotiated rates for travel agents."
-  },
-  {
-    icon: <Globe className="text-[#D4AF37]" size={32} />,
-    title: "International Packages",
-    description: "Customized holiday packages for Europe, Asia, Middle East, and more with full ground handling."
-  },
-  {
-    icon: <Plane className="text-[#D4AF37]" size={32} />,
-    title: "Flight Bookings",
-    description: "Domestic and international flight tickets with competitive markups and instant ticketing."
-  },
-  {
-    icon: <ShieldCheck className="text-[#D4AF37]" size={32} />,
-    title: "Visa Assistance",
-    description: "End-to-end visa support for over 100+ countries with high success rate and expert counseling."
-  }
-];
-
-const destinations = [
-  { name: "Dubai", image: "https://picsum.photos/seed/dubai_skyline_burj/800/600", description: "City of Wonders" },
-  { name: "Switzerland", image: "https://picsum.photos/seed/swiss_alps_village/800/600", description: "Alpine Paradise" },
-  { name: "Bali", image: "https://picsum.photos/seed/bali_temple_forest/800/600", description: "Island of Gods" },
-  { name: "Thailand", image: "https://picsum.photos/seed/thailand_phi_phi_island/800/600", description: "Land of Smiles" },
-];
-
-const testimonials = [
-  {
-    name: "Rajesh Kumar",
-    agency: "Global Travels, Delhi",
-    content: "GI Holidays has transformed our B2B bookings. The rates are unbeatable and the support is 24/7.",
-    stars: 5
-  },
-  {
-    name: "Anita Sharma",
-    agency: "Wonder Tours, Mumbai",
-    content: "The best partner for international group packages. Their ground handling in Europe is exceptional.",
-    stars: 5
-  }
-];
-
 import { getCollection } from "../lib/firebase";
 import { Package, packages as localFallback } from "../lib/data";
 
 const heroSlides = [
   {
-    image: "https://picsum.photos/seed/dubai_luxury_travel/1920/1080",
-    subtitle: "Global B2B Inventory",
-    desc: "Direct access to 500,000+ properties with exclusive agent markups."
+    video: "https://assets.mixkit.co/videos/preview/mixkit-luxury-resort-with-swimming-pool-and-palm-trees-4043-large.mp4",
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=1920&h=1080",
+    title: "Crystal Shores & Azure Horizons",
+    tagline: "Experience the pinnacle of tropical luxury in overwater villas.",
+    btnText: "Explore Islands",
+    link: "/services?dest=bali"
   },
   {
-    image: "https://giholidays.com/wp-content/uploads/2026/04/Char_Dham_tour_202604011708.jpeg",
-    subtitle: "Heritage & Spiritual Tours",
-    desc: "Exclusive Char Dham & Cultural Departures with guaranteed ground support."
+    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=1920&h=1080",
+    title: "Majestic Peaks & Alpine Grace",
+    tagline: "Bespoke mountain retreats for the discerning adventurer.",
+    btnText: "Plan Expedition",
+    link: "/services?category=adventure"
   },
   {
-    image: "https://picsum.photos/seed/leh_ladakh_landscape/1920/1080",
-    subtitle: "Elite Himalayan Escapes",
-    desc: "Premium Ski Resorts & Luxury Cottages at the best B2B net rates."
+    image: "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&q=80&w=1920&h=1080",
+    title: "Ancient Spirits & Sacred Trails",
+    tagline: "A soul-stirring journey through the heart of the Himalayas.",
+    btnText: "Divine Yatra",
+    link: "/char-dham-yatra"
   },
   {
-    image: "https://picsum.photos/seed/alleppey_backwaters_sunset/1920/1080",
-    subtitle: "Serene South India",
-    desc: "Curated Kerala Houseboats & Backwater Bliss for your high-end clients."
+    image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1920&h=1080",
+    title: "Urban Elegance & Golden Sands",
+    tagline: "Ultra-luxury stays in the world’s most iconic skylines.",
+    btnText: "Dubai Deluxe",
+    link: "/services?dest=dubai"
   }
 ];
 
-const tickerContent = [
-  "Char Dham Yatra – Fixed Departures & Custom Groups",
-  "Helicopter Packages for Kedarnath Available",
-  "Complete B2B Travel Solutions for Agents",
-  "Weekend Getaways from Delhi – High Margins",
-  "Luxury + Budget Packages Available"
+const categories = [
+  { name: "Adventure", path: "/services?category=adventure", icon: <Mountain size={40} /> },
+  { name: "Safari", path: "/services?category=safari", icon: <Compass size={40} /> },
+  { name: "Cultural", path: "/services?category=cultural", icon: <Palmtree size={40} /> },
+  { name: "Spiritual", path: "/char-dham-yatra", icon: <Heart size={40} /> },
+  { name: "Family", path: "/services?category=family", icon: <Users size={40} /> },
 ];
 
-const charDhamDestinations = [
-  { name: "Kedarnath Temple", image: "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.27.41-PM-scaled.png", desc: "Spiritual heights and divine energy." },
-  { name: "Badrinath Temple", image: "https://giholidays.com/wp-content/uploads/2026/04/Char_Dham_tour_202604011708.jpeg", desc: "The holy abode of Lord Vishnu." },
-  { name: "Yamunotri Temple", image: "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.26.31-PM-scaled.png", desc: "Source of the sacred Yamuna river." },
-  { name: "Gangotri Temple", image: "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.25.45-PM-scaled.png", desc: "Where the Ganges descends to Earth." },
+const popularDestinations = [
+  { name: "Thailand", tagline: "Tropical Escape", path: "/packages?search=thailand", image: "https://images.unsplash.com/photo-1528181304800-2f140c894979?auto=format&fit=crop&q=80&w=800" },
+  { name: "Bali (Indonesia)", tagline: "Island Sanctuary", path: "/packages?search=bali", image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&q=80&w=800" },
+  { name: "Malaysia", tagline: "Vibrant Heritage", path: "/packages?search=malaysia", image: "https://images.unsplash.com/photo-1596422846543-75c6fc18a5ce?auto=format&fit=crop&q=80&w=800" },
+  { name: "Singapore", tagline: "Futuristic Wonders", path: "/packages?search=singapore", image: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&q=80&w=800" },
+  { name: "Hong Kong", tagline: "Skyline Dreams", path: "/packages?search=hongkong", image: "https://images.unsplash.com/photo-1506466010722-395aa2bef877?auto=format&fit=crop&q=80&w=800" },
+  { name: "Japan", tagline: "Modern Zen Experience", path: "/packages?search=japan", image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&q=80&w=800" },
+];
+
+const testimonials = [
+  {
+    name: "Vikram Mehta",
+    position: "Founder, Elite Journeys India",
+    content: "GI Holidays has redefined our B2B interactions. Their luxury inventory is unmatched and their support is truly concierge-grade."
+  },
+  {
+    name: "Sarah Thompson",
+    position: "Corporate Head, Global Linkers",
+    content: "The seamless management of our annual retreat was spectacular. Every detail was handled with precision and elegance."
+  }
+];
+
+const indianDestinations = [
+  {
+    category: "Hill Stations",
+    icon: <Mountain size={20} />,
+    color: "from-blue-400 to-indigo-600",
+    destinations: [
+      { name: "Manali", tagline: "Snow paradise", image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&q=80&w=600" },
+      { name: "Shimla", tagline: "Colonial charm", image: "https://images.unsplash.com/photo-1549468057-5b7fa1a41d7a?auto=format&fit=crop&q=80&w=600" },
+      { name: "Mussoorie", tagline: "Queen of hills", image: "https://images.unsplash.com/photo-1596701062351-be5f43058f50?auto=format&fit=crop&q=80&w=600" },
+      { name: "Nainital", tagline: "City of lakes", image: "https://images.unsplash.com/photo-1518548419970-58e3b4079ca2?auto=format&fit=crop&q=80&w=600" },
+      { name: "Dharamshala", tagline: "Peaceful retreat", image: "https://images.unsplash.com/photo-1623492701902-47dc207df5dc?auto=format&fit=crop&q=80&w=600" },
+      { name: "Kashmir", tagline: "Heaven on earth", image: "https://images.unsplash.com/photo-1566833925222-f66304672681?auto=format&fit=crop&q=80&w=600" },
+    ]
+  },
+  {
+    category: "Beach Destinations",
+    icon: <Palmtree size={20} />,
+    color: "from-brand-teal to-cyan-600",
+    destinations: [
+      { name: "Goa", tagline: "Beach vibes", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&q=80&w=600" },
+      { name: "Andaman", tagline: "Crystal waters", image: "https://images.unsplash.com/photo-1589135398309-114405f68b05?auto=format&fit=crop&q=80&w=600" },
+      { name: "Lakshadweep", tagline: "Untouched beauty", image: "https://images.unsplash.com/photo-1544735745-b89b57c61dfd?auto=format&fit=crop&q=80&w=600" },
+    ]
+  },
+  {
+    category: "Cultural & Heritage",
+    icon: <Globe size={20} />,
+    color: "from-brand-orange to-red-600",
+    destinations: [
+      { name: "Rajasthan", tagline: "Royal legacy", image: "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&q=80&w=600" },
+      { name: "Varanasi", tagline: "Eternal city", image: "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&q=80&w=600" },
+      { name: "Khajuraho", tagline: "Artistic marvel", image: "https://images.unsplash.com/photo-1598450130612-9c3f4e1f7d98?auto=format&fit=crop&q=80&w=600" },
+    ]
+  },
+  {
+    category: "Spiritual Destinations",
+    icon: <Navigation size={20} />,
+    color: "from-amber-400 to-brand-gold",
+    destinations: [
+      { name: "Char Dham", tagline: "Soulful journey", image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&q=80&w=600" },
+      { name: "Haridwar", tagline: "Gateway to God", image: "https://images.unsplash.com/photo-1622359487900-50b28e67f083?auto=format&fit=crop&q=80&w=600" },
+      { name: "Rishikesh", tagline: "Yoga capital", image: "https://images.unsplash.com/photo-1590603740183-980e7f6920eb?auto=format&fit=crop&q=80&w=600" },
+      { name: "Tirupati", tagline: "Divine grace", image: "https://images.unsplash.com/photo-1616036740257-9449ea1f6621?auto=format&fit=crop&q=80&w=600" },
+    ]
+  },
+  {
+    category: "Wildlife & Safari",
+    icon: <Compass size={20} />,
+    color: "from-emerald-500 to-green-700",
+    destinations: [
+      { name: "Jim Corbett", tagline: "Tiger trails", image: "https://images.unsplash.com/photo-1611080626919-7cf5a9caab53?auto=format&fit=crop&q=80&w=600" },
+      { name: "Ranthambore", tagline: "Lion's roar", image: "https://images.unsplash.com/photo-1581012771300-2249339906a2?auto=format&fit=crop&q=80&w=600" },
+      { name: "Kaziranga", tagline: "Rhino kingdom", image: "https://images.unsplash.com/photo-1547448415-e9f0b291c107?auto=format&fit=crop&q=80&w=600" },
+    ]
+  },
+  {
+    category: "South India",
+    icon: <Compass size={20} />,
+    color: "from-teal-400 to-brand-teal",
+    destinations: [
+      { name: "Kerala", tagline: "God's own country", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&q=80&w=600" },
+      { name: "Coorg", tagline: "Scotland of India", image: "https://images.unsplash.com/photo-1580137469216-3e91307b22a6?auto=format&fit=crop&q=80&w=600" },
+      { name: "Ooty", tagline: "Misty mountains", image: "https://images.unsplash.com/photo-1590050752117-23aae2368bb1?auto=format&fit=crop&q=80&w=600" },
+      { name: "Kodaikanal", tagline: "Princess of hills", image: "https://images.unsplash.com/photo-1621644781664-5a3311690e8c?auto=format&fit=crop&q=80&w=600" },
+    ]
+  }
 ];
 
 export default function Home() {
-  const [activeCategory, setActiveCategory] = useState<"Basic" | "Premium" | "Luxury">("Basic");
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [packages, setPackages] = useState<Package[]>(localFallback);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -130,504 +174,208 @@ export default function Home() {
     fetchPackages();
   }, []);
 
-  const categoryPackages = {
-    Basic: packages.filter(p => p.category === "Basic"),
-    Premium: packages.filter(p => p.category === "Premium"),
-    Luxury: packages.filter(p => p.category === "Luxury")
-  };
-
-  const [partnerForm, setPartnerForm] = useState({
-    name: "",
-    agencyName: "",
-    phone: "",
-    email: "",
-    requirement: ""
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-
-  const handlePartnerSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      // Connect to the same API as Contact page
-      const response = await fetch("/api/inquiry", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...partnerForm, type: "Partner Request" })
-      });
-      if (response.ok) {
-        setIsSuccess(true);
-        setPartnerForm({ name: "", agencyName: "", phone: "", email: "", requirement: "" });
-      }
-    } catch (error) {
-      console.error("Submission failed:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   useEffect(() => {
-    const timer = setInterval(() => {
+    const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 6000);
-    return () => clearInterval(timer);
+    }, 8000);
+    return () => clearInterval(interval);
   }, []);
 
+  const hotOffers = packages.filter(p => p.isHot).slice(0, 6);
+  const weekendTrips = packages.filter(p => (p as any).duration?.includes("Night") || (p as any).category === "Weekend").slice(0, 4);
+
+  const domesticHighlight = [
+    { name: "Manali", tagline: "Snow Paradise", image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&q=80&w=600" },
+    { name: "Goa", tagline: "Beach Bliss", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&q=80&w=600" },
+    { name: "Kashmir", tagline: "Heaven on Earth", image: "https://images.unsplash.com/photo-1566833925222-f66304672681?auto=format&fit=crop&q=80&w=600" },
+    { name: "Kerala", tagline: "God's Own Country", image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&q=80&w=600" },
+    { name: "Rajasthan", tagline: "Royal Heritage", image: "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&q=80&w=600" },
+    { name: "Andaman", tagline: "Crystal Waters", image: "https://images.unsplash.com/photo-1589135398309-114405f68b05?auto=format&fit=crop&q=80&w=600" },
+  ];
+
   return (
-    <div className="overflow-hidden">
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-center pt-20 overflow-hidden bg-[#002366]">
-        {/* Carousel Background */}
+    <div className="bg-white text-slate-900 overflow-hidden">
+      {/* 1. HERO SECTION */}
+      <section className="relative h-[70vh] sm:h-screen sm:min-h-[700px] flex items-center justify-center overflow-hidden bg-brand-midnight">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
             initial={{ opacity: 0, scale: 1.1 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5 }}
-            className="absolute inset-0 z-0"
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+            className="absolute inset-0"
           >
-            <img 
-              src={heroSlides[currentSlide].image} 
-              alt="Travel background" 
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-[#002366]/40 backdrop-blur-[2px]"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-[#002366] via-[#002366]/60 to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-brand-midnight/60 via-transparent to-brand-midnight z-10" />
+            {heroSlides[currentSlide].video ? (
+              <video autoPlay muted loop playsInline className="w-full h-full object-cover">
+                <source src={heroSlides[currentSlide].video} type="video/mp4" />
+              </video>
+            ) : (
+              <img src={heroSlides[currentSlide].image} alt={heroSlides[currentSlide].title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            )}
           </motion.div>
         </AnimatePresence>
-
-        <div className="container-custom relative z-10">
-          <motion.div 
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-4xl text-white"
+        
+        <div className="container-custom relative z-20 text-center">
+          <motion.div
+            key={currentSlide + "-content"}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="max-w-4xl mx-auto px-4"
           >
-            <motion.div 
-              key={currentSlide + "meta"}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 mb-6"
-            >
-              <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span>
-              <span className="text-xs font-bold tracking-wider uppercase">{heroSlides[currentSlide].subtitle}</span>
-            </motion.div>
-            
-            <h1 className="text-6xl md:text-[5.5rem] font-bold leading-[0.95] mb-8 font-serif">
-              India's Most Trusted Partner for <br />
-              <span className="gold-text italic">Char Dham</span> & Spiritual Journeys
+            <span className="text-brand-gold font-bold uppercase tracking-[0.4em] sm:tracking-[0.6em] text-[8px] sm:text-xs mb-3 sm:mb-6 block drop-shadow-lg">Signature of Luxury Travel</span>
+            <h1 className="text-3xl sm:text-5xl md:text-8xl font-serif font-bold text-white leading-tight mb-4 sm:mb-8 drop-shadow-2xl">
+              {heroSlides[currentSlide].title}
             </h1>
-            
-            <motion.p 
-              key={currentSlide + "desc"}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-xl md:text-2xl text-white/90 mb-10 leading-relaxed max-w-3xl font-medium"
-            >
-              Premium travel experiences designed for comfort, safety, and seamless operations — for both travelers and travel partners.
-            </motion.p>
-
-            <div className="flex flex-wrap gap-6 items-center">
-              <Link to="/char-dham-yatra" className="px-10 py-5 bg-[#D4AF37] text-[#002366] font-extrabold text-lg rounded-sm shadow-2xl shadow-[#D4AF37]/30 hover:scale-105 transition-all uppercase tracking-widest flex items-center gap-3 group">
-                Explore Packages <ArrowRight size={22} className="group-hover:translate-x-2 transition-transform" />
-              </Link>
-              <Link to="/b2b-partnership" className="px-10 py-5 border-2 border-white/50 text-white font-extrabold text-lg rounded-sm hover:bg-white/20 transition-all uppercase tracking-widest">
-                Become B2B Partner
-              </Link>
-            </div>
-            
-            {/* Floating Icons Animation */}
-            <div className="absolute -right-20 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-24">
-              <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} className="w-20 h-20 bg-white/10 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/20">
-                <Car size={32} className="text-[#D4AF37]" />
-              </motion.div>
-              <motion.div animate={{ y: [0, 20, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="w-20 h-20 bg-white/10 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/20 -translate-x-12">
-                <Plane size={32} className="text-[#D4AF37]" />
-              </motion.div>
-              <motion.div animate={{ y: [0, -15, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} className="w-20 h-20 bg-white/10 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/20">
-                <Wind size={32} className="text-[#D4AF37]" />
-              </motion.div>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Carousel Indicators */}
-        <div className="absolute bottom-12 right-12 z-30 flex flex-col gap-3">
-          {heroSlides.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentSlide(idx)}
-              className={cn(
-                "w-1 transition-all duration-500 rounded-full",
-                currentSlide === idx ? "h-12 bg-brand-gold" : "h-6 bg-white/20 hover:bg-white/40"
-              )}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* Text Ticker */}
-      <div className="bg-[#002366] py-6 overflow-hidden border-b border-white/10">
-        <div className="flex whitespace-nowrap animate-marquee">
-          {[...tickerContent, ...tickerContent].map((text, idx) => (
-            <span key={idx} className="mx-8 text-white/80 font-bold uppercase tracking-widest text-xs flex items-center gap-4">
-              <div className="w-2 h-2 rounded-full bg-[#D4AF37]"></div>
-              {text}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Animation & Icon Section */}
-      <section className="bg-white py-24 border-b border-slate-100">
-        <div className="container-custom">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[#002366] serif">Travel Made Powerful with Smart Experience</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {[
-              { icon: <Car size={48} />, title: "Road Trips", subtitle: "Car Packages", desc: "Expertly planned road journeys with premium fleet." },
-              { icon: <Plane size={48} />, title: "Air Travel", subtitle: "Flight Integration", desc: "Seamless domestic and international flight connections." },
-              { icon: <Wind size={48} />, title: "Helicopter Services", subtitle: "Kedarnath Premium दर्शन", desc: "VIP aerial access to the most sacred shrines." }
-            ].map((item, idx) => (
-              <motion.div 
-                key={idx}
-                whileHover={{ y: -10 }}
-                className="bg-slate-50 p-12 rounded-[3rem] text-center group border border-transparent hover:border-[#D4AF37] transition-all"
-              >
-                <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center text-[#D4AF37] mx-auto mb-8 shadow-xl group-hover:rotate-12 transition-transform">
-                  {item.icon}
-                </div>
-                <h3 className="text-2xl font-bold text-[#002366] mb-2 serif">{item.title}</h3>
-                <p className="text-[#D4AF37] font-bold text-xs uppercase tracking-widest mb-4">{item.subtitle}</p>
-                <p className="text-slate-500 text-sm leading-relaxed">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Char Dham Mega Section */}
-      <section id="char-dham" className="bg-[#002366] py-32 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-           <img src="https://giholidays.com/wp-content/uploads/2026/04/Char_Dham_tour_202604011708.jpeg" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-        </div>
-        <div className="container-custom relative z-10">
-          <div className="text-center max-w-4xl mx-auto mb-20">
-            <span className="gold-text font-bold uppercase tracking-[0.4em] mb-6 block text-sm">Spiritual Awakening 2026</span>
-            <h2 className="text-5xl md:text-7xl font-bold leading-tight mb-8 serif">Char Dham Yatra – The <span className="gold-text italic">Journey to Salvation</span></h2>
-            <p className="text-white/70 text-xl leading-relaxed mb-10 font-light">
-              Ganga International Holidays specializes in the most comfortable and safe Char Dham Yatra experience. From luxury SUV transfers to VIP Darshan assistance, we handle every detail so you can focus on your devotion.
+            <p className="text-white/80 text-sm sm:text-lg md:text-2xl font-light mb-6 sm:mb-12 max-w-2xl mx-auto leading-relaxed">
+              {heroSlides[currentSlide].tagline}
             </p>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center mb-32">
-            <div>
-              <div className="space-y-8 mb-12">
-                {[
-                  { title: "Complete 12-Day Circuit", desc: "Covering Yamunotri, Gangotri, Kedarnath, and Badrinath in absolute comfort." },
-                  { title: "Special Helicopter Packages", desc: "Direct helicopter transfers for Kedarnath to save time and energy." },
-                  { title: "Verified Boutique Stays", desc: "Handpicked hotels at each Dham with clean facilities and great food." },
-                  { title: "Expert Ground Team", desc: "Dedicated managers stationed at every shrine for 24/7 client support." }
-                ].map((item, idx) => (
-                  <div key={idx} className="flex gap-6 group">
-                    <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-[#002366] transition-all flex-shrink-0">
-                      <Star size={24} />
-                    </div>
-                    <div>
-                      <h4 className="text-xl font-bold mb-2 serif">{item.title}</h4>
-                      <p className="text-white/50 text-sm">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-6">
-                <Link to="/char-dham-yatra" className="px-12 py-5 gold-gradient text-[#002366] font-extrabold text-lg rounded-sm hover:scale-105 transition-all uppercase tracking-widest shadow-2xl inline-block">
-                  Explore Full Details
-                </Link>
-                <Link to="/contact" className="px-12 py-5 border-2 border-white/20 text-white font-bold text-lg rounded-sm hover:bg-white/10 transition-all uppercase tracking-widest inline-block">
-                   Get B2B Quote
-                </Link>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-6 relative">
-              <div className="absolute inset-0 bg-[#D4AF37]/5 blur-[100px] -z-10 animate-pulse"></div>
-              {charDhamDestinations.map((dest, idx) => (
-                <div key={idx} className={cn(
-                  "relative h-72 rounded-[2.5rem] overflow-hidden group border-2 border-white/10",
-                  idx === 1 || idx === 3 ? "translate-y-12" : ""
-                )}>
-                  <img src={dest.image} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" referrerPolicy="no-referrer" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#002366] via-transparent to-transparent opacity-80"></div>
-                  <div className="absolute bottom-6 left-6 right-6">
-                    <p className="text-xs font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-1">{dest.name}</p>
-                  </div>
+            <div className="max-w-3xl mx-auto mb-6 sm:mb-12 group">
+              <div className="relative flex items-center bg-white/10 backdrop-blur-xl border border-white/20 rounded-full overflow-hidden p-1 sm:p-2 shadow-2xl transition-all group-focus-within:bg-white/20 group-focus-within:border-brand-gold/50">
+                <div className="flex-grow flex items-center px-4 sm:px-6">
+                  <Search size={18} className="text-brand-gold mr-2 sm:mr-4 sm:w-6 sm:h-6" />
+                  <input 
+                    type="text" 
+                    placeholder="Search journey..."
+                    className="w-full bg-transparent outline-none text-sm sm:text-xl font-sans placeholder:text-white/40 text-white"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Mini Gallery Strip */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-20 border-t border-white/10">
-             {[
-               "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.27.56-PM-scaled.png",
-               "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.26.46-PM-scaled.png",
-               "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.25.20-PM-scaled.png",
-               "https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.25.45-PM-scaled.png"
-             ].map((img, i) => (
-               <div key={i} className="aspect-video rounded-2xl overflow-hidden border border-white/5 grayscale hover:grayscale-0 transition-all cursor-pointer">
-                  <img src={img} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-               </div>
-             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Rishikesh - Haridwar Section */}
-      <section className="bg-slate-50 py-32 overflow-hidden">
-        <div className="container-custom">
-          <div className="bg-white rounded-[4rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col lg:flex-row">
-            <div className="lg:w-1/2 relative h-96 lg:h-auto">
-              <img src="https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.27.11-PM.png" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-            </div>
-            <div className="lg:w-1/2 p-12 lg:p-24 flex flex-col justify-center">
-              <span className="gold-text font-bold uppercase tracking-[0.3em] mb-6 block text-sm">Weekend Spiritual Escape</span>
-              <h2 className="text-5xl font-bold text-[#002366] mb-8 serif">Rishikesh & Haridwar</h2>
-              <div className="space-y-6 mb-12">
-                 <div className="flex gap-4">
-                    <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-[#D4AF37] flex-shrink-0">
-                      <ArrowRight size={20} />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-slate-800">2 Days / 1 Night Full Tour</h4>
-                      <p className="text-slate-500 text-sm italic">Include Rishikesh, Haridwar, Ganga Aarti Experience</p>
-                    </div>
-                 </div>
-                 <div className="flex gap-4">
-                    <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-[#D4AF37] flex-shrink-0">
-                      <ArrowRight size={20} />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-slate-800">Complete Sightseeing</h4>
-                      <p className="text-slate-500 text-sm italic">Hotel Stay + Transport + Professional Guide</p>
-                    </div>
-                 </div>
+                <Link to={`/packages?search=${searchQuery}`} className="bg-brand-gold text-brand-blue px-4 py-2 sm:px-10 sm:py-5 rounded-full font-bold uppercase tracking-widest text-[9px] sm:text-sm hover:brightness-110">
+                  Find
+                </Link>
               </div>
-              <Link to="/contact" className="px-10 py-5 bg-[#002366] text-white font-extrabold text-lg rounded-sm hover:bg-[#D4AF37] hover:text-[#002366] transition-all uppercase tracking-widest text-center">
-                👉 Contact for B2B Pricing
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-6">
+              <Link to="/contact" className="btn-luxury bg-white text-brand-blue hover:bg-brand-gold hover:text-white glow-hover">
+                Plan Your Trip
               </Link>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Stats / Why Choose Us */}
-      <section className="bg-white py-24 relative overflow-hidden">
-        <div className="container-custom">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <span className="text-[#D4AF37] font-extrabold uppercase tracking-[0.3em] text-[10px] mb-4 block">About Ganga International</span>
-              <h2 className="text-5xl md:text-6xl font-bold mb-8 leading-none tracking-tight text-[#002366] serif">
-                Premium B2B Travel Management Company
-              </h2>
-              <div className="w-20 h-1.5 bg-[#D4AF37] mb-8"></div>
-              <p className="text-slate-600 mb-8 leading-relaxed text-lg">
-                Ganga International Holidays (GI Holidays) is a premier B2B Travel Management Company based in New Delhi, dedicated to serving the professional travel community with trust, reliability, and the most competitive market rates for over 15 years.
-              </p>
-              
-              <div className="grid grid-cols-3 gap-10 py-10 border-y border-slate-100">
-                <div className="flex flex-col">
-                  <span className="text-4xl font-bold text-[#002366] font-serif mb-1">5K+</span>
-                  <span className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold">Active Agents</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-4xl font-bold text-[#002366] font-serif mb-1">120+</span>
-                  <span className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold">Safe Destinations</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-4xl font-bold text-[#002366] font-serif mb-1">MSME</span>
-                  <span className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold">Certified</span>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="relative p-6"
-            >
-              <div className="rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,35,102,0.3)] relative z-10">
-                <img 
-                  src="https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.26.31-PM-scaled.png" 
-                  alt="Premium Travel" 
-                  className="w-full h-auto object-cover" 
-                  referrerPolicy="no-referrer" 
-                />
-              </div>
-              <div className="absolute -inset-4 border-2 border-[#D4AF37]/30 rounded-[3.5rem] -z-0 translate-x-4 translate-y-4" />
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Services Grid */}
-      <section className="bg-slate-50 py-24">
-        <div className="container-custom">
-          <div className="text-center max-w-3xl mx-auto mb-20">
-            <span className="text-[#D4AF37] font-extrabold uppercase tracking-[0.3em] text-[10px] mb-4 block">Infinite Services</span>
-            <h2 className="text-5xl md:text-6xl font-bold mb-6 text-[#002366] serif">What We Facilitate</h2>
-            <p className="text-slate-500 font-medium">Bespoke B2B solutions designed for global scale.</p>
+      {/* 2. HOT OFFERS SECTION 🔥 */}
+      <section className="py-12 sm:py-32 bg-slate-50">
+        <div className="container-custom px-4">
+          <div className="text-center mb-8 sm:mb-20">
+            <span className="inline-block p-1 px-3 bg-red-100 text-red-600 font-black text-[8px] sm:text-[10px] uppercase tracking-widest rounded-full mb-3">Limited Offers</span>
+            <h2 className="text-3xl sm:text-6xl font-serif font-bold text-brand-blue mb-4 sm:mb-6 leading-tight">Hot Deals & Limited Offers</h2>
+            <div className="w-16 sm:w-24 h-1 bg-brand-gold mx-auto" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-            {[
-              { icon: <Hotel size={28}/>, title: "Hotel Bookings", desc: "Global net rates for 500k+ properties." },
-              { icon: <Plane size={28}/>, title: "Flight GDS", desc: "No-markup flight ticketing system." },
-              { icon: <ShieldCheck size={28}/>, title: "Visa Expert", desc: "Premium counseling for 40+ countries." },
-              { icon: <Globe size={28}/>, title: "Group Tours", desc: "Fixed departures with best B2B rates." }
-            ].map((item, idx) => (
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-10">
+            {hotOffers.map((pkg, idx) => (
               <motion.div 
-                key={idx}
-                className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:shadow-brand-blue/5 transition-all group"
+                key={pkg.id} 
+                whileHover={{ y: -10 }}
+                className="bg-white rounded-2xl sm:rounded-[2rem] overflow-hidden shadow-lg border border-slate-100 group flex flex-col"
               >
-                <div className="mb-8 w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-[#D4AF37] group-hover:bg-[#002366] group-hover:text-white transition-all">
-                  {item.icon}
+                <div className="relative h-32 sm:h-64 overflow-hidden">
+                  <img src={pkg.images[0]} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <div className="absolute top-2 sm:top-6 left-2 sm:left-6 flex flex-col gap-1 sm:gap-2">
+                    <span className="bg-brand-midnight text-brand-gold px-2 sm:px-4 py-1 rounded-full text-[6px] sm:text-[9px] font-black uppercase tracking-widest shadow-lg">Best Seller</span>
+                    <span className="bg-red-500 text-white px-2 sm:px-4 py-1 rounded-full text-[6px] sm:text-[9px] font-black uppercase tracking-widest shadow-lg animate-pulse">Limited Offer</span>
+                  </div>
+                  <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-6 right-2 sm:right-6 flex justify-between items-end">
+                    <div className="bg-white/90 backdrop-blur-md px-2 sm:px-4 py-1 sm:py-2 rounded-lg sm:rounded-xl shadow-lg">
+                      <p className="text-[6px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500">Duration</p>
+                      <p className="text-[7px] sm:text-xs font-bold text-brand-midnight uppercase tracking-widest">{pkg.duration}</p>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold mb-4 text-[#002366]">{item.title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed mb-6 font-medium">{item.desc}</p>
-                <div className="w-10 h-1 bg-brand-gold/20 group-hover:w-full transition-all duration-500"></div>
+                <div className="p-3 sm:p-8 flex-grow flex flex-col">
+                  <h3 className="text-xs sm:text-2xl font-serif font-bold text-brand-midnight mb-1 sm:mb-4 group-hover:text-brand-gold transition-colors line-clamp-2">{pkg.name}</h3>
+                  <div className="flex items-center gap-1 sm:gap-2 mb-2 sm:mb-8 text-slate-500 font-medium">
+                    <MapPin size={10} className="text-brand-gold sm:hidden" />
+                    <MapPin size={16} className="text-brand-gold hidden sm:block" />
+                    <span className="text-[8px] sm:text-sm">{pkg.destination}</span>
+                  </div>
+                  <div className="mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between pt-2 sm:pt-6 border-t border-slate-100">
+                    <div className="mb-2 sm:mb-0">
+                      <p className="text-[6px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Starting from</p>
+                      <p className="text-xs sm:text-2xl font-black text-brand-midnight tracking-tighter">₹{pkg.priceCustomer.toLocaleString()}</p>
+                    </div>
+                    <Link to={`/packages/${pkg.id}`} className="bg-brand-midnight text-white px-3 sm:px-8 py-2 sm:py-4 rounded-full text-[7px] sm:text-[10px] font-black uppercase tracking-widest hover:bg-brand-gold transition-all text-center">
+                      Book Now
+                    </Link>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* B2B Packages Section */}
-      <section className="bg-white py-24">
-        <div className="container-custom">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
-            <div className="max-w-2xl">
-              <span className="text-[#D4AF37] font-extrabold uppercase tracking-[0.3em] text-[10px] mb-4 block">Recommended Departures</span>
-              <h2 className="text-5xl md:text-6xl font-bold text-[#002366] serif mb-6 leading-none">Global B2B Inventory</h2>
-              <div className="flex gap-4 mt-8">
-                {(["Basic", "Premium", "Luxury"] as const).map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={cn(
-                      "px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all",
-                      activeCategory === cat 
-                        ? "bg-[#002366] text-white shadow-xl shadow-[#002366]/20" 
-                        : "bg-slate-100 text-slate-400 hover:bg-slate-200"
-                    )}
-                  >
-                    {cat} {cat === "Basic" && <span className="text-[10px] opacity-60 ml-2">(Middle Class)</span>}
-                  </button>
-                ))}
-              </div>
+      {/* 3. INTERNATIONAL PACKAGES 🌍 */}
+      <section className="py-12 sm:py-32 bg-white">
+        <div className="container-custom px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center sm:items-end mb-8 sm:mb-20 gap-4 sm:gap-8">
+            <div className="max-w-2xl text-center sm:text-left">
+              <span className="text-brand-gold font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[8px] sm:text-[10px] mb-2 sm:mb-4 block">World Collection</span>
+              <h2 className="text-3xl sm:text-6xl font-serif font-bold leading-tight text-brand-blue uppercase tracking-tight">Explore International</h2>
             </div>
-            <Link to="/b2b-portal" className="bg-[#002366] text-white px-10 py-5 rounded-sm font-extrabold hover:bg-[#D4AF37] hover:text-[#002366] transition-all flex items-center gap-3 uppercase tracking-widest text-sm shadow-xl shadow-[#002366]/20">
-              Agent Access <ArrowRight size={18} />
+            <Link to="/packages?region=International" className="px-6 py-3 sm:px-10 sm:py-5 rounded-full border border-slate-200 text-brand-midnight hover:border-brand-gold hover:text-brand-gold text-[9px] sm:text-sm font-black uppercase tracking-widest transition-all">
+              All International
             </Link>
           </div>
 
-          <motion.div 
-            layout
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
-          >
-            <AnimatePresence mode="popLayout">
-              {categoryPackages[activeCategory].map((pkg, idx) => (
-                <motion.div
-                  key={pkg.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.4, delay: idx * 0.05 }}
-                  className="bg-white rounded-[3rem] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-[#002366]/5 border border-slate-100 flex flex-col transition-all duration-500 group"
-                >
-                  <div className="relative h-72 overflow-hidden">
-                    <img 
-                      src={pkg.image} 
-                      alt={pkg.name} 
-                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
-                      referrerPolicy="no-referrer" 
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#002366]/80 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-500 flex items-end p-8">
-                       <p className="text-white text-sm font-medium italic opacity-0 group-hover:opacity-100 transition-opacity delay-200">Limited Availability B2B Deal</p>
-                    </div>
-                    <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm text-[#002366] px-5 py-2 rounded-full text-[10px] font-extrabold uppercase tracking-widest shadow-xl">
-                      {pkg.duration}
-                    </div>
-                  </div>
-                  <div className="p-10 flex-grow">
-                    <h3 className="text-2xl font-bold text-[#002366] mb-6 serif group-hover:text-[#D4AF37] transition-colors">{pkg.name}</h3>
-                    <div className="grid grid-cols-2 gap-y-4 mb-8">
-                      {pkg.inclusions.map((inc, i) => (
-                        <div key={i} className="flex items-center gap-2 text-slate-500 text-[11px] font-bold uppercase tracking-tight">
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></div> {inc}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="border-t border-slate-50 pt-8 flex justify-between items-center">
-                      <div>
-                        <p className="text-[9px] text-[#D4AF37] uppercase font-extrabold tracking-[0.2em] mb-2">Net B2B Rates</p>
-                        <p className="text-xl font-bold text-[#002366] serif">Best Price Guaranteed</p>
-                      </div>
-                      <Link to="/b2b-portal" className="w-14 h-14 bg-slate-50 text-[#002366] rounded-2xl flex items-center justify-center hover:bg-[#D4AF37] transition-all group-hover:scale-110">
-                        <ArrowRight size={24} />
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-10">
+            {popularDestinations.map((dest, idx) => (
+              <motion.div
+                key={idx}
+                whileHover={{ y: -15 }}
+                className="group relative h-64 sm:h-[550px] rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden shadow-2xl transition-all duration-700"
+              >
+                <img src={dest.image} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" referrerPolicy="no-referrer" />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-midnight via-transparent to-transparent opacity-90 transition-opacity" />
+                <div className="absolute bottom-4 sm:bottom-12 left-4 sm:left-12 right-4 sm:right-12 z-10 transition-transform duration-500 group-hover:-translate-y-2 text-center sm:text-left">
+                  <span className="text-brand-gold font-bold text-[7px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.4em] mb-1 sm:mb-3 block drop-shadow-lg">{dest.tagline}</span>
+                  <h4 className="text-xl sm:text-4xl font-serif text-white font-bold mb-3 sm:mb-8 italic drop-shadow-xl">{dest.name}</h4>
+                  <Link to={dest.path} className="flex items-center justify-between w-full bg-white text-brand-blue px-3 sm:px-8 py-2 sm:py-5 rounded-full text-[8px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] shadow-2xl hover:bg-brand-gold hover:text-white transition-all transform">
+                    <span className="sm:inline hidden">View Packages</span>
+                    <span className="sm:hidden">Packages</span>
+                    <ArrowRight size={12} className="sm:w-4 sm:h-4" />
+                  </Link>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Featured Destinations */}
-      <section className="section-padding overflow-hidden">
-        <div className="container-custom">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8 text-center md:text-left">
-            <div>
-              <span className="gold-text font-bold uppercase tracking-[0.2em] text-sm mb-4 block">Top Destinations</span>
-              <h2 className="text-4xl md:text-5xl font-bold">Recommended for Agents</h2>
-            </div>
-            <Link to="/services" className="text-brand-blue font-bold flex items-center gap-2 hover:text-brand-gold transition-colors">
-              Explore All <ArrowRight size={20} />
-            </Link>
+      {/* 4. DOMESTIC PACKAGES 🇮🇳 */}
+      <section className="py-12 sm:py-32 bg-slate-50">
+        <div className="container-custom px-4">
+          <div className="text-center mb-8 sm:mb-20">
+            <span className="text-brand-orange font-extrabold uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[8px] sm:text-[10px] mb-2 sm:mb-4 block italic leading-none">Incredible India</span>
+            <h2 className="text-3xl sm:text-6xl font-serif font-bold text-brand-blue uppercase tracking-tight">Explore India</h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {destinations.map((dest, idx) => (
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-10">
+            {domesticHighlight.map((dest, idx) => (
               <motion.div
                 key={idx}
                 whileHover={{ y: -10 }}
-                className="relative h-[450px] rounded-2xl overflow-hidden group shadow-lg"
+                className="group relative h-64 sm:h-96 rounded-2xl sm:rounded-[2.5rem] overflow-hidden shadow-xl shadow-slate-200"
               >
-                <img 
-                  src={dest.image} 
-                  alt={dest.name} 
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-blue via-transparent to-transparent opacity-90" />
-                <div className="absolute bottom-0 left-0 p-8 w-full">
-                  <h3 className="text-white text-2xl font-bold mb-2">{dest.name}</h3>
-                  <p className="text-white/70 text-sm mb-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {dest.description}
-                  </p>
-                  <div className="h-1 w-0 group-hover:w-full bg-brand-gold transition-all duration-500" />
+                <img src={dest.image} alt={dest.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" referrerPolicy="no-referrer" />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-midnight via-transparent to-transparent" />
+                <div className="absolute bottom-4 sm:bottom-8 left-4 sm:left-8 right-4 sm:right-8 text-center sm:text-left">
+                  <span className="text-brand-gold font-bold text-[7px] sm:text-[10px] uppercase tracking-widest mb-1 sm:mb-2 block">{dest.tagline}</span>
+                  <h4 className="text-xl sm:text-4xl font-serif text-white font-bold mb-3 sm:mb-6 italic">{dest.name}</h4>
+                  <Link 
+                    to={`/packages?search=${dest.name}`} 
+                    className="inline-flex items-center gap-2 sm:gap-4 bg-white/10 backdrop-blur-md border border-white/20 text-white font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] text-[8px] sm:text-[10px] px-3 sm:px-8 py-2 sm:py-4 rounded-full hover:bg-brand-gold hover:text-brand-blue transition-all"
+                  >
+                    View <ArrowRight size={12} className="sm:hidden" />
+                    <span className="hidden sm:inline">Packages</span> <ArrowRight size={14} className="hidden sm:inline" />
+                  </Link>
                 </div>
               </motion.div>
             ))}
@@ -635,201 +383,168 @@ export default function Home() {
         </div>
       </section>
 
-      {/* B2B Partnership Section */}
-      <section id="b2b-partnership" className="section-padding bg-slate-900 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-gold/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2"></div>
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-brand-gold/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2"></div>
-        
-        <div className="container-custom relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <motion.div
+      {/* 5. DESTINATION WEDDING 💍 */}
+      <section className="py-12 sm:py-32 bg-white overflow-hidden">
+        <div className="container-custom px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-20 items-center">
+            <motion.div 
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
+              className="space-y-6 sm:space-y-10 text-center sm:text-left"
             >
-              <span className="gold-text font-bold uppercase tracking-[0.4em] mb-6 block text-sm">Strategic Backend Support</span>
-              <h2 className="text-5xl md:text-6xl font-bold mb-8 serif leading-tight">Grow Your Travel <br /><span className="gold-text italic">Business with Us</span></h2>
-              <p className="text-white/60 text-xl mb-12 leading-relaxed font-light">
-                We specialize in backend support for travel agents across India. Enhance your margins and operational reliability.
+              <div className="w-16 sm:w-20 h-1 bg-brand-orange mb-4 sm:mb-8 mx-auto sm:mx-0" />
+              <h2 className="text-3xl sm:text-7xl font-serif font-bold text-brand-midnight leading-tight">Plan Your <br /><span className="italic text-brand-orange font-serif">Dream Wedding.</span></h2>
+              <p className="text-base sm:text-xl text-slate-500 font-light leading-relaxed max-w-lg">
+                Orchestrating cinematic celebrations that transcend expectations globally.
               </p>
-              
-              <div className="space-y-8">
-                {[
-                  { title: "Best Net Rates", desc: "Access direct inventory with High Margins." },
-                  { title: "Complete Ground Handling", desc: "Verified transport and expert on-ground management." },
-                  { title: "Dedicated Support Team", desc: "Expert managers for every region." },
-                  { title: "Custom Branding Options", desc: "White-label itineraries for your clients." },
-                  { title: "Fast Confirmation", desc: "Quick Booking & Response system." }
-                ].map((item, idx) => (
-                  <div key={idx} className="flex gap-6 items-start">
-                    <div className="w-12 h-12 rounded-full border border-brand-gold/30 flex items-center justify-center flex-shrink-0 text-brand-gold">
-                      <Navigation size={18} />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-xl mb-1">{item.title}</h4>
-                      <p className="text-white/40 text-sm">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-12 flex flex-wrap gap-4 text-[10px] text-white/40 font-bold uppercase tracking-widest">
-                <span>Travel Agents</span>
-                <span className="w-1 h-1 bg-[#D4AF37] rounded-full"></span>
-                <span>Tour Operators</span>
-                <span className="w-1 h-1 bg-[#D4AF37] rounded-full"></span>
-                <span>Corporate Planners</span>
+              <div className="flex justify-center sm:justify-start pt-4">
+                <Link to="/destination-wedding" className="bg-brand-orange text-white px-8 py-4 sm:px-12 sm:py-6 rounded-full font-black uppercase tracking-widest text-[9px] sm:text-[10px] shadow-2xl hover:scale-105 transition-transform flex items-center gap-2 sm:gap-4">
+                  Concierge <Heart size={14} fill="white" className="sm:w-4 sm:h-4" />
+                </Link>
               </div>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="bg-white rounded-[2.5rem] p-8 md:p-12 text-slate-900 shadow-2xl"
-            >
-              {isSuccess ? (
-                <div className="text-center py-12">
-                  <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-8">
-                    <CheckCircle size={48} />
-                  </div>
-                  <h3 className="text-3xl font-bold mb-4 serif text-brand-blue">Application Received</h3>
-                  <p className="text-slate-500 mb-8 leading-relaxed">
-                    Thank you for your interest. A partnership manager will reach out within 24 hours to onboard your agency.
-                  </p>
-                  <button 
-                    onClick={() => setIsSuccess(false)}
-                    className="gold-text font-bold uppercase tracking-widest text-xs hover:underline"
-                  >
-                    Submit another request
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <h3 className="text-3xl font-bold mb-8 serif text-brand-blue">Agency Onboarding</h3>
-                  <form onSubmit={handlePartnerSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-slate-400 mb-2 tracking-widest">Full Name</label>
-                        <input 
-                          type="text" 
-                          required
-                          className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-4 outline-none focus:border-brand-gold transition-all"
-                          placeholder="Your Name"
-                          value={partnerForm.name}
-                          onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-slate-400 mb-2 tracking-widest">Agency Name</label>
-                        <input 
-                          type="text" 
-                          required
-                          className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-4 outline-none focus:border-brand-gold transition-all"
-                          placeholder="Your Travel Agency"
-                          value={partnerForm.agencyName}
-                          onChange={(e) => setPartnerForm({...partnerForm, agencyName: e.target.value})}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-slate-400 mb-2 tracking-widest">Phone Number</label>
-                        <input 
-                          type="tel" 
-                          required
-                          className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-4 outline-none focus:border-brand-gold transition-all"
-                          placeholder="+91 00000 00000"
-                          value={partnerForm.phone}
-                          onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-slate-400 mb-2 tracking-widest">Email Address</label>
-                        <input 
-                          type="email" 
-                          required
-                          className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-4 outline-none focus:border-brand-gold transition-all"
-                          placeholder="name@agency.com"
-                          value={partnerForm.email}
-                          onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] uppercase font-bold text-slate-400 mb-2 tracking-widest">Primary Requirement</label>
-                      <textarea 
-                        required
-                        rows={3}
-                        className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-4 outline-none focus:border-brand-gold transition-all resize-none"
-                        placeholder="Tell us about your client niche or monthly volume..."
-                        value={partnerForm.requirement}
-                        onChange={(e) => setPartnerForm({...partnerForm, requirement: e.target.value})}
-                      />
-                    </div>
-
-                    <button 
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full gold-bg text-brand-blue py-5 rounded-xl font-black uppercase tracking-widest text-sm shadow-xl shadow-brand-gold/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                    >
-                      {isSubmitting ? "Processing..." : "Partner with Us"} <Send size={18} />
-                    </button>
-                    <p className="text-[9px] text-slate-400 text-center italic mt-4">
-                      * By submitting, you agree to GI Holidays B2B Partner Terms & Privacy Policy.
-                    </p>
-                  </form>
-                </>
-              )}
-            </motion.div>
+            <div className="grid grid-cols-2 gap-6 relative">
+              <div className="absolute inset-0 bg-brand-orange/5 blur-3xl -z-10" />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                className="rounded-[3rem] overflow-hidden h-[500px] shadow-3xl transform -rotate-2"
+              >
+                <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover" />
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="rounded-[3rem] overflow-hidden h-[400px] shadow-3xl transform translate-y-24 rotate-3"
+              >
+                <img src="https://images.unsplash.com/photo-1544124499-58912cbddaad?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover" />
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Lead Capture Banner Removed in favor of full section above */}
-      
-      {/* Testimonials */}
-      <section className="section-padding bg-slate-50">
-        <div className="container-custom">
-          {/* Partner Logos */}
-          <div className="mb-24 pb-16 border-b border-slate-200">
-            <div className="text-center mb-10">
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em]">Our Trusted Partners & Airlines</p>
+      {/* 6. WEEKEND GETAWAY 🚗 */}
+      <section className="py-12 sm:py-32 bg-slate-50">
+        <div className="container-custom px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-8 sm:mb-20 gap-4 sm:gap-8">
+            <div className="text-center md:text-left">
+              <span className="text-brand-gold font-extrabold uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[8px] sm:text-[10px] mb-2 sm:mb-4 block">Signature Escapes</span>
+              <h2 className="text-3xl sm:text-6xl font-serif font-bold text-brand-midnight uppercase tracking-tight italic">Weekend Getaways</h2>
             </div>
-            <div className="flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-30 grayscale hover:grayscale-0 transition-all duration-500">
-              <span className="text-2xl font-serif font-black tracking-tighter">EMIRATES</span>
-              <span className="text-2xl font-serif font-black tracking-tighter">HILTON</span>
-              <span className="text-2xl font-serif font-black tracking-tighter">SINGAPORE</span>
-              <span className="text-2xl font-serif font-black tracking-tighter">MARRIOTT</span>
-              <span className="text-2xl font-serif font-black tracking-tighter">QATAR</span>
-            </div>
+            <Link to="/weekend-getaways" className="bg-brand-midnight text-white px-6 py-3 sm:px-10 sm:py-5 rounded-full font-black uppercase tracking-widest text-[9px] sm:text-[10px] hover:bg-brand-gold transition-all shadow-xl">
+              All Escapes
+            </Link>
           </div>
 
-          <div className="text-center mb-16">
-            <span className="gold-text font-bold uppercase tracking-[0.2em] text-sm mb-4 block">Testimonials</span>
-            <h2 className="text-4xl md:text-5xl font-bold text-[#002366]">Trusted by 5000+ Agents</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {testimonials.map((t, idx) => (
-              <div key={idx} className="bg-white p-10 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col h-full card-hover">
-                <div className="flex gap-1 mb-6">
-                  {[...Array(t.stars)].map((_, i) => <Star key={i} size={18} className="text-[#D4AF37] fill-[#D4AF37]" />)}
-                </div>
-                <p className="text-slate-600 text-lg italic mb-8 flex-grow leading-relaxed">"{t.content}"</p>
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 gold-gradient rounded-full flex-shrink-0 flex items-center justify-center font-bold text-[#002366]">
-                    {t.name[0]}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8">
+            {weekendTrips.map((pkg, idx) => (
+              <motion.div key={idx} whileHover={{ y: -10 }} className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-slate-100 group flex flex-col">
+                <div className="relative h-32 sm:h-64 overflow-hidden">
+                  <img src={pkg.images[0]} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <div className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-brand-midnight/90 text-white px-2 sm:px-4 py-1 sm:py-1.5 font-bold text-[6px] sm:text-[9px] uppercase tracking-widest rounded-full">
+                    {pkg.duration}
                   </div>
-                  <div>
-                    <h4 className="font-bold text-[#002366]">{t.name}</h4>
-                    <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">{t.agency}</p>
+                </div>
+                <div className="p-3 sm:p-8 flex-grow flex flex-col">
+                  <h3 className="text-xs sm:text-xl font-serif font-bold mb-2 sm:mb-4 text-brand-blue group-hover:text-brand-gold transition-colors line-clamp-2">{pkg.name}</h3>
+                  <div className="mt-auto pt-2 sm:pt-6 border-t border-slate-100 flex items-center justify-between">
+                    <p className="text-[10px] sm:text-lg font-black text-brand-midnight tracking-tighter">₹{pkg.priceCustomer.toLocaleString()}</p>
+                    <Link to={`/packages/${pkg.id}`} className="p-1.5 sm:p-3 bg-brand-midnight text-white rounded-full hover:bg-brand-gold transition-all">
+                      <ArrowRight size={12} className="sm:w-4 sm:h-4" />
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 7. CORPORATE TRAVEL 🏢 */}
+      <section className="py-12 sm:py-32 bg-white relative overflow-hidden">
+        <div className="container-custom px-4">
+          <div className="bg-brand-midnight rounded-[2rem] sm:rounded-[4rem] p-8 sm:p-32 overflow-hidden relative group">
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-gold/10 -skew-x-12 transform translate-x-1/2" />
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-20 items-center">
+              <div className="space-y-6 sm:space-y-10 text-center lg:text-left">
+                <Briefcase size={36} className="text-brand-gold mb-4 sm:mb-10 mx-auto lg:mx-0 sm:w-14 sm:h-14" />
+                <h2 className="text-3xl sm:text-7xl font-serif font-bold text-white mb-4 sm:mb-8 italic leading-tight">Corporate MICE Excellence.</h2>
+                <p className="text-white/60 text-base sm:text-xl font-light leading-relaxed max-w-md italic mx-auto lg:mx-0">
+                  Premium management for conferences, team retreats, and global tours.
+                </p>
+                <div className="flex justify-center lg:justify-start">
+                  <Link to="/corporate-travel" className="inline-flex items-center gap-4 bg-brand-gold text-brand-blue px-8 py-4 sm:px-12 sm:py-6 rounded-full font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] text-[9px] sm:text-[10px] shadow-2xl hover:brightness-110 transition-all">
+                    Get Proposal <ArrowRight size={16} className="sm:w-5 sm:h-5" />
+                  </Link>
+                </div>
+              </div>
+              <div className="hidden lg:block relative">
+                <div className="w-full aspect-square rounded-full border-2 border-brand-gold/20 flex items-center justify-center animate-pulse">
+                  <div className="w-3/4 aspect-square rounded-full border-2 border-brand-gold/40 flex items-center justify-center">
+                    <div className="w-1/2 aspect-square rounded-full bg-brand-gold/20 flex items-center justify-center">
+                      <Globe size={80} className="text-brand-gold animate-[spin_10s_linear_infinite]" />
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 8. TESTIMONIALS ⭐ */}
+      <section className="py-12 sm:py-24 bg-slate-50">
+        <div className="container-custom px-4">
+          <div className="text-center mb-10 sm:mb-20 max-w-4xl mx-auto">
+            <span className="text-brand-teal font-extrabold uppercase tracking-[0.4em] text-[8px] sm:text-[10px] mb-2 sm:mb-4 block leading-none">Traveler Voices</span>
+            <h2 className="text-3xl sm:text-6xl font-serif font-bold text-brand-blue italic leading-tight">Echoes of Excellence</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12">
+            {testimonials.map((t, idx) => (
+              <motion.div key={idx} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white p-8 sm:p-12 rounded-[2rem] sm:rounded-[3rem] shadow-lg relative group hover:shadow-brand-gold/5 transition-all">
+                <div className="absolute top-0 left-8 sm:left-12 -translate-y-1/2 w-10 h-10 sm:w-14 sm:h-14 bg-white shadow-xl rounded-full flex items-center justify-center border border-slate-50">
+                  <Star size={18} fill="#D4AF37" className="text-brand-gold sm:w-6 sm:h-6" />
+                </div>
+                <p className="text-lg sm:text-xl font-serif text-slate-600 leading-relaxed italic mb-6 sm:mb-10 line-clamp-4">"{t.content}"</p>
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-8 sm:w-12 h-0.5 bg-brand-gold/30" />
+                  <div>
+                    <h4 className="font-bold text-brand-blue uppercase tracking-widest text-[10px] sm:text-xs">{t.name}</h4>
+                    <p className="text-brand-gold text-[8px] sm:text-[9px] font-black uppercase tracking-widest mt-0.5">{t.position}</p>
+                  </div>
+                </div>
+              </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 9. FINAL CTA 🚀 */}
+      <section className="py-16 sm:py-32 bg-white overflow-hidden">
+        <div className="container-custom px-4">
+          <div className="vibrant-gradient p-8 sm:p-24 rounded-[3rem] sm:rounded-[5rem] text-center shadow-3xl relative">
+            <div className="max-w-4xl mx-auto">
+              <Navigation className="text-white/20 mx-auto mb-6 sm:mb-10 w-12 h-12 sm:w-20 sm:h-20" />
+              <h2 className="text-3xl sm:text-7xl font-serif font-bold text-white mb-6 sm:mb-10 leading-tight">Plan Your Trip Now</h2>
+              <p className="text-white/60 mb-10 sm:mb-16 max-w-xl mx-auto text-sm sm:text-xl font-light italic leading-relaxed">
+                Our advisors are standing by to transform your travel aspirations into a custom itinerary.
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
+                <Link to="/contact" className="bg-brand-gold text-brand-blue px-10 py-5 sm:px-16 sm:py-7 rounded-full font-black uppercase tracking-widest text-[10px] sm:text-xs shadow-2xl hover:scale-105 transition-all">
+                  Contact Us
+                </Link>
+                <a href="https://wa.me/919999999999" target="_blank" rel="noopener noreferrer" className="bg-white text-brand-midnight px-10 py-5 sm:px-16 sm:py-7 rounded-full font-black uppercase tracking-widest text-[10px] sm:text-xs shadow-2xl hover:scale-105 transition-all border border-brand-midnight/10">
+                  WhatsApp Support
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>

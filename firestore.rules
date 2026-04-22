@@ -19,6 +19,10 @@ service cloud.firestore {
       );
     }
     
+    function isVendor() {
+      return isSignedIn() && exists(/databases/$(database)/documents/vendors/$(request.auth.uid));
+    }
+    
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
     function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
@@ -57,21 +61,31 @@ service cloud.firestore {
     }
 
     // 3. Bookings
-    // Get/List: Owner or Admin
+    // Get/List: Owner, Assigned Vendor or Admin
     // Create: Verified User or Admin
     match /bookings/{bookingId} {
       allow create: if isVerified() && isValidBooking(incoming()) && (incoming().userId == request.auth.uid || isAdmin());
-      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow update: if isAdmin();
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.vendorId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.vendorId == request.auth.uid || isAdmin());
+      allow update: if isAdmin() || (
+        isVendor() && 
+        resource.data.vendorId == request.auth.uid && 
+        incoming().diff(existing()).affectedKeys().hasOnly(['vendorStatus', 'status']) &&
+        isValidBookingUpdate(incoming())
+      );
       allow delete: if isAdmin();
     }
 
     function isValidBooking(b) {
       return b.packageId is string && b.packageId.size() <= 128 &&
-             b.status in ['Pending', 'Confirmed', 'Cancelled'] &&
+             b.status in ['Pending', 'Confirmed', 'Cancelled', 'Vendor-Assigned', 'In-Progress', 'Completed'] &&
              b.totalAmount is number && b.totalAmount >= 0 &&
              b.createdAt == request.time;
+    }
+
+    function isValidBookingUpdate(b) {
+      return b.vendorStatus in ['Accepted', 'Declined'] &&
+             b.status in ['Vendor-Assigned', 'In-Progress', 'Completed', 'Confirmed'];
     }
 
     // 4. Agents (B2B Partner Profiles)
@@ -108,6 +122,19 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.auth.uid == userId;
       // Prevent role escalation during update
       allow update: if (isSignedIn() && request.auth.uid == userId && incoming().role == existing().role) || isAdmin();
+    }
+
+    // 7. Vendors
+    match /vendors/{vendorId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // 8. Notifications
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && resource.data.recipientId == request.auth.uid;
+      allow create: if isAdmin(); // Only admins or system can create notifications
+      allow update: if isSignedIn() && request.auth.uid == resource.data.recipientId && incoming().diff(existing()).affectedKeys().hasOnly(['read']);
     }
   }
 }

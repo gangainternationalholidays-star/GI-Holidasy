@@ -45,12 +45,31 @@
         "packageId": { "type": "string" },
         "userId": { "type": "string" },
         "agentId": { "type": "string" },
-        "status": { "type": "string", "enum": ["Pending", "Confirmed", "Cancelled"] },
+        "status": { "type": "string", "enum": ["Pending", "Confirmed", "Cancelled", "Vendor-Assigned", "In-Progress", "Completed"] },
+        "vendorId": { "type": "string", "description": "ID of the assigned vendor" },
+        "vendorStatus": { "type": "string", "enum": ["None", "Pending", "Accepted", "Declined"], "default": "None" },
         "totalAmount": { "type": "number" },
         "travelDate": { "type": "string", "format": "date" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["packageId", "status", "totalAmount"]
+    },
+    "Vendor": {
+      "title": "Vendor",
+      "description": "Details of a service provider (Hotel, Transport, etc).",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "businessName": { "type": "string" },
+        "type": { "type": "string", "enum": ["Hotel", "Transport", "Guide", "All-In-One"] },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "rating": { "type": "number" },
+        "isVerified": { "type": "boolean" },
+        "regions": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "businessName", "type"]
     },
     "Agent": {
       "title": "B2B Agent",
@@ -100,6 +119,10 @@
     "/agents/{agentId}": {
       "schema": "Agent",
       "description": "B2B Partner profiles"
+    },
+    "/vendors/{vendorId}": {
+      "schema": "Vendor",
+      "description": "Service provider profiles"
     }
   }
 }

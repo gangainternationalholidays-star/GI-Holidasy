@@ -123,7 +123,7 @@ export default function CharDhamYatra() {
   return (
     <div className="pt-20">
       {/* Hero Section */}
-      <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[60vh] sm:h-[85vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img 
             src="https://giholidays.com/wp-content/uploads/2026/04/Char_Dham_tour_202604011708.jpeg" 
@@ -131,29 +131,29 @@ export default function CharDhamYatra() {
             alt="Kedarnath Temple"
             referrerPolicy="no-referrer"
           />
-          <div className="absolute inset-0 bg-[#002366]/40 backdrop-blur-[1px]"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-[#002366] via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-brand-midnight/60 backdrop-blur-[1px] sm:backdrop-blur-[2px]"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-midnight via-transparent to-brand-midnight/40"></div>
         </div>
         
-        <div className="container-custom relative z-10 text-center text-white">
+        <div className="container-custom relative z-10 text-center text-white px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <span className="gold-text font-bold uppercase tracking-[0.4em] mb-6 block text-sm">Divine Pilgrimage 2026</span>
-            <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-bold mb-8 leading-[1.1] font-serif">
+            <span className="text-brand-gold font-bold uppercase tracking-[0.3em] sm:tracking-[0.5em] mb-3 sm:mb-6 block text-[8px] sm:text-xs">Divine Pilgrimage 2026</span>
+            <h1 className="text-3xl sm:text-7xl lg:text-8xl font-black mb-4 sm:mb-8 leading-tight font-serif italic text-shadow-lg">
               Char Dham Yatra <br />
-              <span className="gold-text italic">The Moksha Path</span>
+              <span className="text-brand-gold not-italic">The Moksha Path</span>
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-10 font-medium font-serif leading-relaxed italic">
-              "Twelve days of spiritual awakening, exploring the four sacred portals to the divine."
+            <p className="text-sm sm:text-2xl text-white/80 max-w-2xl mx-auto mb-6 sm:mb-12 font-medium font-serif leading-relaxed italic">
+              "Twelve days of spiritual awakening, exploring sacred portals."
             </p>
-            <div className="flex flex-wrap justify-center gap-6">
-              <a href="#booking" className="px-12 py-5 gold-gradient text-[#002366] font-extrabold text-lg rounded-sm hover:scale-105 transition-all shadow-2xl flex items-center gap-3">
-                Book My Yatra <Clock size={20} />
+            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-8">
+              <a href="#booking" className="bg-brand-gold text-brand-blue px-8 py-4 sm:px-12 sm:py-6 rounded-full font-black uppercase tracking-widest text-[10px] sm:text-xs shadow-2xl flex items-center justify-center gap-2">
+                Book My Yatra <Clock size={16} className="sm:w-5 sm:h-5" />
               </a>
-              <a href="#itinerary" className="px-12 py-5 border-2 border-white/30 text-white font-extrabold text-lg rounded-sm hover:bg-white/10 transition-all">
+              <a href="#itinerary" className="border-2 border-white/30 text-white px-8 py-4 sm:px-12 sm:py-6 rounded-full font-black uppercase tracking-widest text-[10px] sm:text-xs hover:bg-white/10 flex items-center justify-center">
                 View Itinerary
               </a>
             </div>
@@ -162,39 +162,38 @@ export default function CharDhamYatra() {
       </section>
 
       {/* Introduction */}
-      <section className="section-padding bg-white overflow-hidden">
-        <div className="container-custom">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+      <section className="py-12 sm:py-32 bg-white overflow-hidden">
+        <div className="container-custom px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-24 items-center">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
+              className="text-center sm:text-left"
             >
-              <h2 className="text-4xl md:text-5xl font-bold text-[#002366] mb-8 serif">The Sacred Circuit of Salvation</h2>
-              <p className="text-slate-600 text-lg leading-relaxed mb-8">
-                The Char Dham Yatra is one of the most sacred pilgrimages in India. Located in the majestic Himalayas of Uttarakhand, this circuit covers four holy shrines: <strong>Yamunotri, Gangotri, Kedarnath, and Badrinath</strong>. It is believed that completing this yatra washes away all sins and opens the gates to Moksha (Salvation).
-              </p>
-              <p className="text-slate-600 text-lg leading-relaxed mb-10">
-                Ganga International Holidays provides a meticulously well-planned 12-day route, ensuring safety, spiritual comfort, and seamless operations through the challenging yet divine terrains of Uttarakhand.
+              <span className="text-brand-gold font-bold uppercase tracking-[0.4em] mb-2 sm:mb-4 block text-[8px] sm:text-xs">Spiritual Odyssey</span>
+              <h2 className="text-2xl sm:text-6xl font-serif font-bold text-brand-blue mb-6 sm:mb-10 leading-tight italic">The Sacred Circuit <br /> of Salvation</h2>
+              <p className="text-slate-500 text-sm sm:text-lg leading-relaxed mb-6 sm:mb-8 font-light italic">
+                A sacred pilgrimage circuit covering holy shrines: <strong className="text-brand-blue font-bold">Yamunotri, Gangotri, Kedarnath, and Badrinath</strong>.
               </p>
               
-              <div className="grid grid-cols-2 gap-8">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full gold-gradient/10 flex items-center justify-center flex-shrink-0 text-[#D4AF37]">
-                    <ShieldCheck size={24} />
+              <div className="grid grid-cols-2 gap-4 sm:gap-10 border-t border-slate-100 pt-6 sm:pt-10">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 text-center sm:text-left">
+                  <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-brand-gold/5 flex items-center justify-center flex-shrink-0 text-brand-gold">
+                    <ShieldCheck size={20} className="sm:w-7 sm:h-7" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-[#002366]">Safety First</h4>
-                    <p className="text-xs text-slate-500">Verified vehicles & drivers.</p>
+                    <h4 className="font-bold text-brand-blue text-sm sm:text-lg mb-0.5 sm:mb-1">Safety First</h4>
+                    <p className="text-[6px] sm:text-[10px] text-slate-400 font-black uppercase tracking-widest">Verified Drivers</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full gold-gradient/10 flex items-center justify-center flex-shrink-0 text-[#D4AF37]">
-                    <Plane size={24} />
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 text-center sm:text-left">
+                  <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-brand-teal/5 flex items-center justify-center flex-shrink-0 text-brand-teal">
+                    <Plane size={20} className="sm:w-7 sm:h-7" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-[#002366]">Helicopter Ready</h4>
-                    <p className="text-xs text-slate-500">Kedarnath heli-support.</p>
+                    <h4 className="font-bold text-brand-blue text-sm sm:text-lg mb-0.5 sm:mb-1">Heli-Support</h4>
+                    <p className="text-[6px] sm:text-[10px] text-slate-400 font-black uppercase tracking-widest">Kedarnath Access</p>
                   </div>
                 </div>
               </div>
@@ -209,11 +208,12 @@ export default function CharDhamYatra() {
               <img 
                 src="https://giholidays.com/wp-content/uploads/2026/04/Screenshot-2026-04-01-at-5.27.41-PM-scaled.png" 
                 alt="Divine View" 
-                className="rounded-[3rem] shadow-2xl"
+                className="rounded-[4rem] shadow-3xl"
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-[#D4AF37] rounded-full flex items-center justify-center text-white p-10 text-center shadow-2xl">
-                <p className="font-serif italic text-xl font-bold leading-tight">Trusted by 10,000+ Devotees & 200+ Agencies</p>
+              <div className="absolute -bottom-10 -right-10 w-72 h-72 bg-brand-gold rounded-full flex flex-col items-center justify-center text-brand-blue p-12 text-center shadow-3xl border-8 border-white">
+                <span className="text-4xl font-serif font-black mb-2 italic">10k+</span>
+                <p className="font-serif italic text-sm font-bold leading-tight">Devotees Entrusted Our Service for Salvation</p>
               </div>
             </motion.div>
           </div>
@@ -275,15 +275,15 @@ export default function CharDhamYatra() {
         </div>
       </section>
 
-      {/* Pricing Variants */}
-      <section className="section-padding bg-white overflow-hidden">
-        <div className="container-custom">
-          <div className="text-center mb-20">
-            <span className="gold-text font-bold uppercase tracking-widest text-sm mb-4 block">Travel Your Way</span>
-            <h2 className="text-4xl md:text-5xl font-bold text-[#002366] serif">Package Variants for Every Comfort</h2>
+      {/* pricing variants */}
+      <section className="py-12 sm:py-32 bg-white overflow-hidden">
+        <div className="container-custom px-4">
+          <div className="text-center mb-12 sm:mb-24">
+            <span className="text-brand-gold font-bold uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[8px] sm:text-xs mb-2 sm:mb-4 block">Travel Your Way</span>
+            <h2 className="text-2xl sm:text-6xl font-serif font-bold text-brand-blue italic">Package Variants</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-10">
             {variants.map((v, i) => (
               <motion.div
                 key={i}
@@ -292,67 +292,46 @@ export default function CharDhamYatra() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
                 className={cn(
-                  "p-10 rounded-[3rem] border relative flex flex-col h-full",
-                  v.highlight ? "bg-[#002366] text-white border-[#002366] shadow-2xl shadow-[#002366]/30 scale-105 z-10" : "bg-white text-[#002366] border-slate-100 shadow-sm"
+                  "p-6 sm:p-12 rounded-[2rem] sm:rounded-[3.5rem] border relative flex flex-col h-full transition-all duration-500",
+                  v.highlight 
+                    ? "bg-brand-blue text-white border-brand-gold/30 shadow-2xl sm:scale-105 z-10" 
+                    : "bg-slate-50 text-brand-blue border-slate-100 shadow-sm"
                 )}
               >
                 {v.highlight && (
-                  <div className="absolute top-8 right-8 bg-[#D4AF37] text-[#002366] px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                    Best for Comfort
+                  <div className="absolute top-4 sm:top-10 right-4 sm:right-10 bg-brand-gold text-brand-blue px-3 sm:px-5 py-1 rounded-full text-[6px] sm:text-[9px] font-black uppercase tracking-widest">
+                    Best Choice
                   </div>
                 )}
-                <h3 className="text-2xl font-bold mb-6 italic serif">{v.name}</h3>
-                <div className="mb-8">
-                  <span className={cn("text-4xl font-bold", v.highlight ? "text-[#D4AF37]" : "text-[#002366]")}>
+                <h3 className="text-xl sm:text-3xl font-serif font-bold mb-4 sm:mb-8 italic">{v.name}</h3>
+                <div className="mb-6 sm:mb-10">
+                  <span className={cn("text-2xl sm:text-5xl font-serif font-bold", v.highlight ? "text-brand-gold" : "text-brand-blue")}>
                     {v.price}
                   </span>
-                  <span className="text-xs uppercase font-bold tracking-widest ml-2 block opacity-60">
-                    {v.approx}
-                  </span>
                 </div>
 
-                <div className="space-y-6 flex-grow mb-10">
-                  <div className="flex gap-4">
-                    <Calendar className={v.highlight ? "text-[#D4AF37]" : "text-[#D4AF37]"} size={20} />
+                <div className="space-y-4 sm:space-y-8 flex-grow mb-6 sm:mb-12">
+                  <div className="flex gap-3 sm:gap-5">
+                    <Calendar className="text-brand-gold shrink-0 w-5 h-5 sm:w-6 sm:h-6" />
                     <div>
-                      <h4 className="font-bold text-sm uppercase tracking-wider mb-1">Accommodation</h4>
-                      <p className={cn("text-sm", v.highlight ? "text-white/60" : "text-slate-500")}>{v.stay}</p>
+                      <h4 className="font-black text-[8px] sm:text-[10px] uppercase tracking-widest mb-1 opacity-60">Stay</h4>
+                      <p className={cn("text-xs sm:text-base font-medium", v.highlight ? "text-white/80" : "text-slate-600")}>{v.stay}</p>
                     </div>
                   </div>
-                  <div className="flex gap-4">
-                    <Globe className={v.highlight ? "text-[#D4AF37]" : "text-[#D4AF37]"} size={20} />
+                  <div className="flex gap-3 sm:gap-5">
+                    <Globe className="text-brand-gold shrink-0 w-5 h-5 sm:w-6 sm:h-6" />
                     <div>
-                      <h4 className="font-bold text-sm uppercase tracking-wider mb-1">Ground Transport</h4>
-                      <p className={cn("text-sm", v.highlight ? "text-white/60" : "text-slate-500")}>{v.transport}</p>
+                      <h4 className="font-black text-[8px] sm:text-[10px] uppercase tracking-widest mb-1 opacity-60">Transport</h4>
+                      <p className={cn("text-xs sm:text-base font-medium", v.highlight ? "text-white/80" : "text-slate-600")}>{v.transport}</p>
                     </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <Users className={v.highlight ? "text-[#D4AF37]" : "text-[#D4AF37]"} size={20} />
-                    <div>
-                      <h4 className="font-bold text-sm uppercase tracking-wider mb-1">Meal Plan</h4>
-                      <p className={cn("text-sm", v.highlight ? "text-white/60" : "text-slate-500")}>{v.meals}</p>
-                    </div>
-                  </div>
-                  <div className="pt-4 space-y-3">
-                    {v.features.map((f, idx) => (
-                      <div key={idx} className="flex items-center gap-3 text-xs font-bold uppercase tracking-tight">
-                        <CheckCircle2 className={v.highlight ? "text-green-400" : "text-[#D4AF37]"} size={14} /> {f}
-                      </div>
-                    ))}
                   </div>
                 </div>
-
-                {v.highlight && (
-                  <p className="text-[10px] text-white/40 mb-6 italic">
-                    *Helicopter pricing is kept 10–20% competitive vs current market rates.
-                  </p>
-                )}
 
                 <button className={cn(
-                  "w-full py-5 rounded-2xl font-bold uppercase tracking-widest text-sm transition-all",
-                  v.highlight ? "bg-[#D4AF37] text-[#002366] hover:brightness-110" : "bg-slate-100 text-[#002366] hover:bg-[#D4AF37] hover:text-[#002366]"
+                  "w-full py-4 sm:py-6 rounded-full font-black uppercase tracking-widest text-[9px] sm:text-xs transition-all",
+                  v.highlight ? "bg-brand-gold text-brand-blue shadow-lg hover:brightness-110" : "bg-brand-blue text-white shadow-md"
                 )}>
-                  Select Plan
+                  Secure This Passage
                 </button>
               </motion.div>
             ))}
